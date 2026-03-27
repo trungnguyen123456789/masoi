@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🍈 VUA SẦU RIÊNG - Ma Sói Lớp Học</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --durian: #FDE047; --durian-dark: #EAB308; --green-light: #BBF7D0; --green-main: #4ADE80;
+            --danger: #FDA4AF; --danger-dark: #E11D48; --dark: #1E293B; --bg-body: #F0FDF4; --white: #FFFFFF;
+            --shadow-solid: 4px 4px 0px var(--dark); --shadow-solid-sm: 2px 2px 0px var(--dark);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Fredoka', sans-serif; }
+        
+        body {
+            background-color: var(--bg-body);
+            background-image: radial-gradient(var(--green-light) 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: var(--dark);
+            text-align: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 20px 0 5px;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 
+                -2px -2px 0 var(--dark),  
+                 2px -2px 0 var(--dark),
+                -2px  2px 0 var(--dark),
+                 2px  2px 0 var(--dark),
+                 4px  4px 0 var(--dark);
+        }
+        
+        .subtitle { 
+            font-size: 1.3rem; color: var(--dark); margin-bottom: 30px; font-weight: 600;
+            background: var(--durian); display: inline-block; padding: 5px 15px;
+            border-radius: 20px; border: 2px solid var(--dark); box-shadow: var(--shadow-solid-sm);
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; }
+
+        .comic-panel {
+            background: var(--white); border: 3px solid var(--dark); border-radius: 24px;
+            padding: 40px 30px; box-shadow: var(--shadow-solid); margin: 0 auto; position: relative;
+        }
+
+        #menu-screen { min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .menu-panel { max-width: 450px; width: 100%; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .floating-durian { position: absolute; font-size: 2.5rem; animation: bounce 2s infinite alternate ease-in-out; z-index: 10; }
+
+        @keyframes bounce {
+            from { transform: translateY(0) rotate(-10deg); }
+            to { transform: translateY(-15px) rotate(10deg); }
+        }
+
+        button {
+            background: var(--durian); color: var(--dark); border: 3px solid var(--dark); padding: 14px 28px; 
+            margin: 8px 6px; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer;
+            box-shadow: 0px 5px 0px var(--dark); transition: all 0.1s ease; text-transform: uppercase;
+        }
+        
+        button:hover:not(:disabled) { background: var(--durian-dark); transform: translateY(2px); box-shadow: 0px 3px 0px var(--dark); }
+        button:active:not(:disabled) { transform: translateY(5px); box-shadow: 0px 0px 0px var(--dark); }
+        
+        button[style*="background:#666"], button[style*="background:#555"] { background: #CBD5E1 !important; }
+        button[style*="background:#666"]:hover, button[style*="background:#555"]:hover { background: #94A3B8 !important; }
+        
+        button[style*="background:#f00"], button[style*="background:var(--danger)"] { background: var(--danger) !important; }
+        button[style*="background:#f00"]:hover, button[style*="background:var(--danger)"]:hover { background: var(--danger-dark) !important; }
+        
+        button[style*="background:#0f3460"] { background: #93C5FD !important; }
+
+        button:disabled { 
+            background: #E2E8F0 !important; color: #94A3B8 !important; cursor: not-allowed; 
+            box-shadow: 0px 5px 0px #94A3B8 !important; border-color: #94A3B8; transform: none !important;
+        }
+
+        input, select {
+            padding: 16px 24px; font-size: 18px; font-weight: 600; border-radius: 16px; border: 3px solid var(--dark);
+            background: var(--white); color: var(--dark); width: 100%; max-width: 320px; margin: 15px auto; 
+            text-align: center; box-shadow: inset 0px 4px 0px rgba(0,0,0,0.05); outline: none; display: block;
+        }
+        input:focus { border-color: var(--durian-dark); background: #FEF9C3; }
+
+        .deck-container {
+            position: relative; width: 100%; min-height: 480px; margin: 20px auto; display: flex; flex-wrap: wrap; 
+            justify-content: center; align-items: center; background: var(--green-main); border-radius: 24px; 
+            border: 4px solid var(--dark); box-shadow: inset 0px 8px 0px rgba(0,0,0,0.1), var(--shadow-solid); 
+            overflow: hidden; padding: 20px;
+        }
+        
+        #particleCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        
+        .deal-card {
+            width: 110px; height: 160px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); 
+            opacity: 0; cursor: pointer; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transform-style: preserve-3d;
+        }
+        .deal-card.spread { position: relative; top: auto; left: auto; transform: translate(0, 0) scale(1); opacity: 1; margin: -10px 8px; }
+        .deal-card.spread:hover { transform: translateY(-10px) rotate(-5deg); z-index: 5; }
+        .deal-card.fade-out { transform: scale(0) translateY(100px); opacity: 0; pointer-events: none; }
+        .deal-card.selected-center { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1.8); z-index: 999; opacity: 1; margin: 0; }
+        
+        .deal-card-inner {
+            position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transform-style: preserve-3d; border-radius: 12px; box-shadow: var(--shadow-solid);
+        }
+        .deal-card.flipped .deal-card-inner { transform: rotateY(180deg); }
+        
+        .card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; border: 3px solid var(--dark);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: var(--white); overflow: hidden;
+        }
+        .card-face.front { background: var(--durian); background-image: radial-gradient(var(--durian-dark) 2px, transparent 2px); background-size: 15px 15px; }
+        .card-face.back { transform: rotateY(180deg); background: #FEF08A; }
+        
+        .role-name { font-size: 16px !important; font-weight: 700; color: var(--dark); margin-bottom: 5px; line-height: 1.1; }
+        .role-badge { background: var(--white); color: var(--dark); padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; border: 2px solid var(--dark); margin-bottom: 6px; }
+        .card-face.back p { font-size: 10px !important; line-height: 1.3; color: var(--dark); font-weight: 500; }
+        
+        .status { font-size: 1.2rem; font-weight: 600; margin: 10px 0 20px; color: var(--dark); }
+        .player-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 20px 0; }
+        .player-item {
+            background: var(--white); padding: 10px 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+            border: 3px solid var(--dark); box-shadow: var(--shadow-solid-sm); display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 140px;
+        }
+        .player-item.dead { opacity: 0.6; background: #CBD5E1; text-decoration: line-through; border-style: dashed; }
+        
+        .timer {
+            font-size: 3.5rem; font-weight: 700; color: var(--dark); margin: 10px 0; background: var(--durian);
+            display: inline-block; padding: 5px 30px; border-radius: 24px; border: 4px solid var(--dark); box-shadow: var(--shadow-solid);
+        }
+        
+        .chat-box {
+            height: 220px; overflow-y: auto; background: var(--white); border-radius: 16px; padding: 15px; text-align: left;
+            margin: 15px auto; border: 3px solid var(--dark); box-shadow: inset 0px 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 8px;
+        }
+        .chat-message {
+            padding: 10px 14px; border-radius: 16px; border-bottom-left-radius: 0px; max-width: 85%; font-size: 1rem;
+            background: #E2E8F0; color: var(--dark); border: 2px solid var(--dark); align-self: flex-start; font-weight: 500;
+        }
+        .chat-message.self { background: var(--durian); align-self: flex-end; border-bottom-left-radius: 16px; border-bottom-right-radius: 0px; }
+        .chat-message.ghost { background: #F1F5F9; border: 2px dashed #94A3B8; color: #64748b; font-style: italic; }
+        
+        .phase-header {
+            font-size: 1.8rem; font-weight: 700; padding: 15px 30px; border-radius: 20px; margin: 0 auto 20px;
+            background: var(--white); border: 4px solid var(--dark); box-shadow: var(--shadow-solid); display: inline-block;
+        }
+
+        .hidden { display: none !important; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; border-left: 2px solid var(--dark); }
+        ::-webkit-scrollbar-thumb { background: var(--dark); border-radius: 10px; }
+
+        /* TỐI ƯU MOBILE */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            h1 { font-size: 2rem; margin-top: 10px; }
+            .subtitle { font-size: 1.1rem; padding: 4px 12px; margin-bottom: 20px; }
+            .comic-panel { padding: 20px 15px; border-radius: 16px; border-width: 2px; }
+            .deal-card { width: 90px; height: 135px; }
+            .deal-card.spread { margin: -15px 2px; }
+            .deal-card.selected-center { transform: translate(-50%, -50%) scale(2.2); }
+            input, select { padding: 12px 16px; font-size: 16px; border-width: 2px; width: 100%; max-width: none; }
+            button { width: 100%; margin: 6px 0; padding: 12px; font-size: 16px; border-width: 2px; display: block; box-sizing: border-box; }
+            .player-item { width: 100%; flex-direction: row; padding: 12px; justify-content: space-between; font-size: 1rem; margin-bottom: 5px; }
+            .timer { font-size: 2.2rem; padding: 5px 15px; }
+            .phase-header { font-size: 1.4rem; padding: 10px 20px; width: 100%; }
+            .deck-container { padding: 10px; min-height: 400px; }
+            .chat-box { height: 180px; }
+            #nightActionPanel, #dayPhase { padding: 15px; }
+            .floating-durian { font-size: 1.8rem; }
+        }
+        
+        .show-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div id="menu-screen">
+            <div style="position: relative; margin-bottom: 25px;">
+                <h1>VUA SẦU RIÊNG</h1>
+                <div class="subtitle">Di Sản Vua Sầu Riêng🎒</div>
+                <span class="floating-durian" style="top:-10px; left:-20px;">🍈</span>
+                <span class="floating-durian" style="bottom:20px; right:-20px; animation-delay:1s; font-size:2rem; transform: scaleX(-1);">🍈</span>
+            </div>
+            
+            <div class="comic-panel menu-panel">
+                <div id="nameInputSection">
+                    <input type="text" id="playerName" placeholder="Nhập tên của bạn vào đây!" maxlength="20">
+                    <button onclick="confirmName()">✅ CHỐT TÊN</button>
+                </div>
+                
+                <div id="nameConfirmedSection" class="hidden">
+                    <p style="font-size:1.2rem; margin-bottom: 20px; font-weight: 600;">
+                        Xin chào, <span id="greetingName" style="color:var(--durian-dark); font-weight:700; font-size:1.5rem; text-decoration: underline;"></span>!
+                    </p>
+                    <button onclick="createRoom()">🚀 TẠO PHÒNG MỚI</button>
+                    <button onclick="showJoinScreen()" style="background: var(--white); color: var(--dark);">🔑 NHẬP MÃ PHÒNG</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="join-screen" class="hidden comic-panel menu-panel" style="margin-top: 10vh;">
+            <h2 style="margin-bottom:15px; font-size: 1.8rem;">🔑 Nhập mã phòng</h2>
+            <input type="number" id="roomCodeInput" placeholder="VD: 123456" maxlength="6" style="font-size:2rem; letter-spacing:5px; font-weight:700;">
+            <button onclick="joinRoom()">VÀO PHÒNG THÔI</button>
+            <button onclick="backToMenu()" style="background:#CBD5E1; margin-top:15px;">← Quay lại</button>
+        </div>
+
+        <div id="room-screen" class="hidden comic-panel">
+            <h2 style="font-size: 2rem; background: var(--green-light); padding: 10px; border-radius: 12px; border: 3px solid var(--dark); display: inline-block;">
+                PHÒNG <span id="roomCodeDisplay" style="color:var(--danger-dark);"></span>
+            </h2>
+            <p id="roomStatusText" class="status">Đang chờ 500 anh em...</p>
+            
+            <div class="player-list" id="waitingPlayerList"></div>
+            
+            <div style="margin:30px 0; padding-top: 20px; border-top: 3px dashed var(--dark);">
+                <button onclick="toggleReadyStatus()" id="readyButton">👌 TÔI SẴN SÀNG</button>
+                <button onclick="forceStartAsHost()" id="hostStartButton" class="hidden" style="background:#93C5FD;">🎴 BẮT ĐẦU CHIA BÀI (Host)</button>
+            </div>
+            <button onclick="leaveCurrentRoom()" style="background:var(--white);">🚪 Thoát phòng</button>
+        </div>
+
+        <div id="dealing-screen" class="hidden">
+            <h2 style="margin-top: 20px; font-size: 2rem; text-shadow: 2px 2px 0 var(--white);">ĐANG XÀO BÀI...</h2>
+            <p id="dealingStatusText" class="status" style="background: var(--white); display: inline-block; padding: 5px 15px; border-radius: 20px; border: 2px solid var(--dark);">Chọn 1 lá bài may mắn</p>
+            <div class="deck-container" id="fullDeckContainer">
+                </div>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <div id="phaseHeaderContainer" class="phase-header"></div>
+            
+            <div id="nightPhase" class="hidden comic-panel" style="padding: 30px 15px; background: #334155; color: var(--white);">
+                <div id="nightCaller" style="font-size: 1.3rem; min-height:80px; margin-bottom: 20px;"></div>
+                <div id="nightActionPanel" class="hidden" style="background:var(--white); color:var(--dark); border-radius:20px; padding:25px; margin:0 auto; max-width:600px; border: 4px solid var(--dark); box-shadow: var(--shadow-solid);">
+                    <div id="nightActionContent"></div>
+                </div>
+            </div>
+            
+            <div id="dayPhase" class="hidden comic-panel" style="padding: 20px;">
+                <div class="timer" id="dayTimerDisplay">2:00</div>
+                <div style="margin:10px auto; max-width:700px;">
+                    <div class="chat-box" id="discussionChat"></div>
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 10px;">
+                        <input type="text" id="chatInput" placeholder="Chém gió đi..." style="margin:0; flex-grow: 1; text-align: left; padding: 12px 20px;" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button onclick="sendChatMessage()" style="margin:0; padding:12px 24px; width: auto;">GỬI</button>
+                    </div>
+                </div>
+                
+                <div id="voteSection" style="margin-top: 30px; padding-top: 20px; border-top: 3px dashed var(--dark);">
+                    <p style="font-size:1.2rem; font-weight:700;">Chỉ tay điểm mặt người bị loại (1 lần duy nhất)</p>
+                    <div class="player-list" id="dayVoteList"></div>
+                    <button id="skipVoteBtn" onclick="selectVote('SKIP')" style="background:#E2E8F0; padding: 10px 20px;">⏭️ Bỏ qua vòng này</button>
+                    
+                    <div id="confirmVoteSection" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 20px; background: var(--durian); border: 3px solid var(--dark); box-shadow: inset 0px 4px 0px rgba(255,255,255,0.5);">
+                        <p style="font-size: 1.2rem; font-weight: 600;">Bạn quyết định chọn: <strong id="selectedVoteName" style="font-size:1.5rem; text-decoration: underline;"></strong>?</p>
+                        <button onclick="confirmVote()" style="background:var(--green-main); color:var(--dark); margin-top: 15px;">✅ CHỐT ĐƠN</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="voteResultPanel" class="hidden comic-panel" style="margin-top: 20px; background:var(--danger); border-color: var(--dark);">
+                <h3 id="voteResultTitle" style="line-height: 1.5; font-size: 1.6rem; color: var(--dark);"></h3>
+            </div>
+        </div>
+
+        <div id="endGameScreen" class="hidden comic-panel" style="margin-top: 5vh; background: var(--durian);">
+            <h1 id="endTitle" style="font-size:3rem; text-shadow: none; color: var(--dark);"></h1>
+            <p id="endSubtitle" style="font-size:1.4rem; margin:15px 0 25px; font-weight: 600;"></p>
+            <div id="endRoleReveal" style="text-align: left; background: var(--white); padding: 20px; border-radius: 16px; max-height: 300px; overflow-y: auto; margin-bottom: 25px; border: 3px solid var(--dark); font-size: 1.1rem; font-weight: 500; box-shadow: inset 0px 4px 8px rgba(0,0,0,0.05);"></div>
+            <button onclick="returnToWaitingRoom()" style="background: var(--green-main);">VỀ PHÒNG CHỜ</button>
+            <button onclick="leaveCurrentRoom()" style="background: var(--white);">THOÁT PHÒNG</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWZHCnZRrOrX7n-fsUGJw8iTynWIK4cKQ",
+            authDomain: "daichienlophoc.firebaseapp.com",
+            databaseURL: "https://daichienlophoc-default-rtdb.firebaseio.com",
+            projectId: "daichienlophoc",
+            storageBucket: "daichienlophoc.firebasestorage.app",
+            messagingSenderId: "918701241713",
+            appId: "1:918701241713:web:a820e86139d713649c72d0",
+            measurementId: "G-D0HP049N33"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let CLASS_CARDS = [
+            { id: 1, cardName: "Lê Hoàng Hải", role: "Lê Hoàng Hải", desc: "Thủ lĩnh nông dân. Lời nói có trọng lượng gấp đôi (2 phiếu vote).", team: "village" },
+            { id: 2, cardName: "Sao Kê", role: "Sao Kê", desc: "Nắm giữ 2 bình nước thần: 1 bình cứu, 1 bình độc.", team: "village" },
+            { id: 3, cardName: "Tiên tri", role: "Tiên tri", desc: "Mỗi đêm soi một người để biết họ là Nông dân hay phe Sầu riêng.", team: "village" },
+            { id: 4, cardName: "Doraemon bel", role: "Doraemon bel", desc: "Mỗi đêm chọn một người để canh gác, bảo vệ khỏi bị ăn vụng.", team: "village" },
+            { id: 5, cardName: "Người trồng sầu riêng", role: "Người trồng sầu riêng", desc: "Đêm nào cũng được Ghim 1 người. Nếu bị loại, kéo theo kẻ đó đi cùng.", team: "village" },
+            { id: 6, cardName: "Cô Loan", role: "Cô Loan", desc: "Một lần trong game, có quyền phủ quyết kết quả vote ban ngày.", team: "village" },
+            { id: 7, cardName: "Lương Xuân Bá", role: "Lương Xuân Bá", desc: "Mỗi đêm bón phân cho 1 người, tăng đề kháng không bị ăn vụng đêm sau.", team: "village" },
+            { id: 8, cardName: "Quỳnh Anh", role: "Quỳnh Anh", desc: "Khóa miệng 1 người ban ngày (chỉ được vote, không được nói).", team: "village" },
+            { id: 9, cardName: "Phương Anh", role: "Phương Anh", desc: "Có khả năng kiểm tra xem một người đã vote cho ai ngày hôm trước.", team: "village" },
+            { id: 10, cardName: "Gia Như", role: "Gia Như", desc: "Nếu bị phe Sầu riêng chọn, có 50% cơ hội trốn thoát.", team: "village" },
+            { id: 11, cardName: "Minh Nguyên", role: "Minh Nguyên", desc: "Thức cùng 1 người. Biết được nếu có người đi ăn vụng (không rõ mặt).", team: "village" },
+            { id: 12, cardName: "Cún", role: "Cún", desc: "Biết Thùy là ai. Nếu Thùy chết, bạn được vote 2 lần vĩnh viễn.", team: "village" },
+            { id: 13, cardName: "Thùy", role: "Thùy", desc: "Biết Cún là ai. Nếu Cún chết, bạn được vote 2 lần vĩnh viễn.", team: "village" },
+            { id: 21, cardName: "Thanh Nhàn", role: "Thanh Nhàn", desc: "1 đêm duy nhất dùng phản ứng hóa chó soi 1 người xem có chức năng không.", team: "village" },
+            { id: 22, cardName: "Giosep", role: "Giosep", desc: "Nếu phe Sầu riêng ăn người này, chúng sẽ bị mắc nghẹn và mất lượt đêm sau.", team: "village" },
+            { id: 23, cardName: "Alo em ăn cơm chưa", role: "Alo em ăn cơm chưa", desc: "Mỗi đêm gửi 1 tin nhắn ẩn danh cho 1 người bất kỳ.", team: "village" },
+            { id: 24, cardName: "Quang Hảo", role: "Quang Hảo", desc: "Mỗi đêm được ti hí xem màn hình của người đang hành động.", team: "village" },
+            
+            { id: 34, cardName: "Đậu Bảo", role: "Đậu Bảo", desc: "Trùm ăn vụng. Soi ra Nông dân.", team: "wolf" },
+            { id: 35, cardName: "Phước Bảo", role: "Phước Bảo", desc: "Mỗi đêm khóa chức năng của 1 người.", team: "wolf" },
+            { id: 36, cardName: "Quốc Bảo", role: "Quốc Bảo", desc: "Biết Tiên tri/Bảo vệ nếu họ vô tình tương tác trúng đồng bọn.", team: "wolf" },
+            { id: 37, cardName: "Giáp sầu riêng", role: "Giáp sầu riêng", desc: "Nếu bị Người trồng bắn khi chết, phát bắn sẽ bị xịt.", team: "wolf" },
+            { id: 38, cardName: "Nhà ảo thuật", role: "Nhà ảo thuật", desc: "Biến thành hình dáng người đã chết để lừa Tiên tri soi.", team: "wolf" },
+
+            { id: 48, cardName: "Thằng hướng nội", role: "Thằng hướng nội", desc: "Muốn bị cả lớp ghét. Nếu bị vote loại ban ngày, bạn này thắng luôn.", team: "third" },
+            { id: 49, cardName: "Thằng buôn sầu", role: "Thằng buôn sầu", desc: "Mỗi đêm thu phục 1 khách. Cuối game ai sống cũng là khách thì thắng.", team: "third" },
+            { id: 50, cardName: "Hoài Anh", role: "Hoài Anh", desc: "Đêm đầu chọn 1 người, nếu người đó bị loại, Hoài Anh thừa kế chức năng.", team: "third" },
+            { id: 51, cardName: "Đậu mất xe", role: "Đậu mất xe", desc: "Đổi vị trí 2 người bất kỳ khiến mục tiêu chức năng bị tráo đổi.", team: "third" },
+            { id: 52, cardName: "Thằng giấu xe", role: "Thằng giấu xe", desc: "Chọn 1 người đêm đầu. Sống -> thắng cùng. Chết -> phải bị loại mới thắng.", team: "third" }
+        ];
+
+        for (let i = 1; i <= 15; i++) {
+            CLASS_CARDS.push({ id: 100 + i, cardName: "Cư dân sầu riêng", role: "Cư dân sầu riêng", desc: "Dùng lý lẽ ban ngày để tìm ra kẻ ăn vụng bảo vệ vườn sầu riêng.", team: "village" });
+        }
+        for (let i = 1; i <= 8; i++) {
+            CLASS_CARDS.push({ id: 200 + i, cardName: "Đậu Bảo", role: "Đậu Bảo", desc: "Hội ăn vụng. Mỗi đêm cắn 1 mục tiêu.", team: "wolf" });
+        }
+        
+        let myName = "", myPlayerId = "", currentRoomCode = null, isHost = false, myRole = null;                    
+        let roomRef = null, gameTimer = null, nightTimer = null;
+        let dealAutoStartTimer = null, dealAllReadyTimer = null, dealCountdownInterval = null; 
+        let currentPhase = "waiting", alivePlayersCount = 0;
+        let currentGameData = {};
+        let pendingVoteTarget = null;
+        
+        let audioContext;
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        function playSound(type) {
+            initAudio();
+            const now = audioContext.currentTime;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'click':           
+                    osc.frequency.setValueAtTime(820, now);
+                    osc.type = 'sine';
+                    gain.gain.value = 0.4;
+                    gain.gain.linearRampToValueAtTime(0, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                    break;
+                    
+                case 'cardPick':        
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.type = 'sawtooth';
+                    gain.gain.value = 0.35;
+                    gain.gain.linearRampToValueAtTime(0, now + 0.65);
+                    osc.start(now);
+                    osc.stop(now + 0.75);
+                    break;
+                    
+                case 'flip':            
+                    const notes = [620, 820, 1050];
+                    notes.forEach((freq, i) => {
+                        const o = audioContext.createOscillator();
+                        const g = audioContext.createGain();
+                        o.frequency.value = freq;
+                        o.type = 'triangle';
+                        o.connect(g);
+                        g.connect(audioContext.destination);
+                        g.gain.value = 0.3;
+                        g.gain.linearRampToValueAtTime(0, now + 0.45 + i * 0.1);
+                        o.start(now + i * 0.05);
+                        o.stop(now + 0.7 + i * 0.1);
+                    });
+                    break;
+                    
+                case 'ready':           
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.type = 'sine';
+                    gain.gain.value = 0.45;
+                    gain.gain.linearRampToValueAtTime(0, now + 0.8);
+                    osc.start(now);
+                    osc.stop(now + 1);
+                    break;
+                    
+                case 'success':         
+                    const winNotes = [700, 880, 1100, 1400];
+                    winNotes.forEach((freq, i) => {
+                        const o = audioContext.createOscillator();
+                        const g = audioContext.createGain();
+                        o.frequency.value = freq;
+                        o.type = 'sine';
+                        o.connect(g);
+                        g.connect(audioContext.destination);
+                        g.gain.value = 0.25;
+                        g.gain.linearRampToValueAtTime(0, now + 1.2 + i * 0.08);
+                        o.start(now + i * 0.1);
+                        o.stop(now + 1.5 + i * 0.1);
+                    });
+                    break;
+            }
+        }
+        
+        let particleCanvas, particleCtx, particles = [];
+        
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 15 + 8;
+                this.speedX = Math.random() * 7 - 3.5;
+                this.speedY = Math.random() * -12 - 4;
+                this.life = 95 + Math.random() * 35;
+                this.color = Math.random() > 0.5 ? '#FDE047' : '#FFFFFF';
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = Math.random() * 0.15 - 0.07;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += 0.3; 
+                this.speedX *= 0.98;
+                this.angle += this.spin;
+                this.life -= 1.8;
+                this.size *= 0.975;
+            }
+            draw() {
+                particleCtx.save();
+                particleCtx.globalAlpha = this.life / 110;
+                particleCtx.translate(this.x, this.y);
+                particleCtx.rotate(this.angle);
+                
+                particleCtx.fillStyle = this.color;
+                particleCtx.beginPath();
+                for(let i=0; i<5; i++){
+                    particleCtx.lineTo(Math.cos( (18+i*72)/180*Math.PI ) * this.size + 0, -Math.sin( (18+i*72)/180*Math.PI ) * this.size + 0);
+                    particleCtx.lineTo(Math.cos( (54+i*72)/180*Math.PI ) * (this.size*0.4) + 0, -Math.sin( (54+i*72)/180*Math.PI ) * (this.size*0.4) + 0);
+                }
+                particleCtx.closePath();
+                particleCtx.fill();
+                particleCtx.lineWidth = 2;
+                particleCtx.strokeStyle = '#1E293B';
+                particleCtx.stroke();
+                
+                particleCtx.restore();
+            }
+        }
+        
+        function emitParticles(x, y, count = 40) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y));
+            }
+        }
+        
+        function animateParticles() {
+            if (!particleCtx) return;
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        
+        function generateRoomCode() {
+            const chars = "0123456789"; 
+            let code = "";
+            for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            return code;
+        }
+        
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        function showScreen(id) {
+            document.querySelectorAll('.container > div').forEach(screen => screen.classList.add('hidden'));
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('show-pop');
+            }
+        }
+        
+        function confirmName() {
+            const input = document.getElementById("playerName").value.trim();
+            if (!input) return alert("Vui lòng nhập tên thật của bạn!");
+            myName = input;
+            myPlayerId = "player_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+            document.getElementById("greetingName").innerText = myName;
+            document.getElementById("nameInputSection").classList.add("hidden");
+            document.getElementById("nameConfirmedSection").classList.remove("hidden");
+            playSound('click');
+        }
+        
+        function backToMenu() { 
+            playSound('click');
+            showScreen("menu-screen"); 
+        }
+        function showJoinScreen() { 
+            playSound('click');
+            showScreen("join-screen"); 
+        }
+        
+        function joinRoomAsPlayer(isLateJoin = false) {
+            if (isLateJoin) {
+                roomRef.child("players/" + myPlayerId).set({ 
+                    name: myName, ready: true, alive: false, 
+                    role: { id: 999, cardName: "Hồn Ma Đi Lạc", role: "Khán Giả", desc: "Bạn vào trễ nên hóa ma luôn! Nằm xem kịch hay nhé.", team: "ghost" } 
+                });
+            } else {
+                roomRef.child("players/" + myPlayerId).set({ name: myName, ready: false, alive: true, role: null });
+            }
+        }
+        
+        function createRoom() {
+            playSound('click');
+            currentRoomCode = generateRoomCode();
+            isHost = true;
+            roomRef = db.ref("vua_sau_rieng_rooms/" + currentRoomCode);
+            
+            const initialData = { hostId: myPlayerId, hostName: myName, status: "waiting", players: {}, created: Date.now(), phase: "waiting", dayNumber: 1 };
+            
+            roomRef.set(initialData).then(() => {
+                joinRoomAsPlayer(false);
+                showScreen("room-screen");
+                document.getElementById("roomCodeDisplay").innerText = currentRoomCode;
+                startListeningToRoom();
+            }).catch(err => console.error(err));
+        }
+        
+        function joinRoom() {
+            playSound('click');
+            let code = document.getElementById("roomCodeInput").value.trim();
+            if (code.length !== 6) return alert("Mã phòng phải đúng 6 chữ số!");
+            currentRoomCode = code;
+            roomRef = db.ref("vua_sau_rieng_rooms/" + currentRoomCode);
+            
+            roomRef.once("value", snap => {
+                if (!snap.exists()) return alert("❌ Phòng không tồn tại hoặc đã bị xóa!");
+                const data = snap.val();
+                const isLateJoin = (data.status !== "waiting");
+                
+                joinRoomAsPlayer(isLateJoin);
+                
+                if (data.status === "playing") {
+                    showScreen("game-screen");
+                } else if (data.status === "dealing") {
+                    showScreen("dealing-screen");
+                } else {
+                    showScreen("room-screen");
+                }
+                
+                document.getElementById("roomCodeDisplay").innerText = currentRoomCode;
+                startListeningToRoom();
+            });
+        }
+
+        function leaveCurrentRoom() {
+            playSound('click');
+            if (roomRef && myPlayerId) {
+                if (isHost) {
+                    if (confirm("Bạn là Host, nếu bạn thoát phòng sẽ bị XÓA hoàn toàn! Xác nhận?")) {
+                        roomRef.remove().then(() => {
+                            location.reload();
+                        });
+                    }
+                } else {
+                    roomRef.child("players/" + myPlayerId).remove().then(() => {
+                        location.reload();
+                    });
+                }
+            } else {
+                location.reload();
+            }
+        }
+
+        function returnToWaitingRoom() {
+            playSound('click');
+            
+            // Dọn dẹp local variables
+            pendingVoteTarget = null;
+            window.isCalculatingVote = false;
+            window.currentDayNum = null;
+            window.timeLeftDay = null;
+            window.alertedLockDay = null;
+            window.currentVoteResultShown = null;
+            if (gameTimer) clearInterval(gameTimer);
+            if (nightTimer) clearInterval(nightTimer);
+            if (window.voteResultInterval) clearInterval(window.voteResultInterval);
+
+            if (roomRef) {
+                if (isHost) {
+                    let updates = { 
+                        status: "waiting", phase: "waiting", currentNightIndex: 0, 
+                        dayNumber: 1, votes: null, nightActions: null, chat: null, 
+                        dayVoteResult: null, quynhAnhUsed: null, winner: null, 
+                        lastDayVotes: null, lastNightKills: null 
+                    };
+                    
+                    if (currentGameData && currentGameData.players) {
+                        Object.keys(currentGameData.players).forEach(pId => {
+                            updates["players/" + pId + "/ready"] = false;
+                            updates["players/" + pId + "/alive"] = true; 
+                            updates["players/" + pId + "/role"] = null;  
+                            updates["players/" + pId + "/team"] = null;  
+                        });
+                    }
+                    roomRef.update(updates);
+                } else {
+                    roomRef.child("players/" + myPlayerId).update({ 
+                        ready: false, alive: true, role: null, team: null 
+                    });
+                }
+            }
+        }
+        
+        function startListeningToRoom() {
+            if (!roomRef) return;
+            roomRef.on("value", snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    alert("Phòng đã bị Host giải tán!");
+                    location.reload();
+                    return;
+                }
+                
+                currentGameData = data;
+                alivePlayersCount = Object.values(data.players || {}).filter(p => p.alive === true && p.team !== "ghost").length;
+                
+                if (data.status === "waiting") {
+                    if (document.getElementById("room-screen").classList.contains("hidden")) {
+                        showScreen("room-screen");
+                        if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
+                        if (dealAllReadyTimer) clearTimeout(dealAllReadyTimer);
+                        if (dealCountdownInterval) clearInterval(dealCountdownInterval);
+                        if (gameTimer) clearInterval(gameTimer);
+                    }
+                    renderWaitingRoom(data);
+                    if (isHost) {
+                        const readyCount = Object.values(data.players || {}).filter(p => p.ready).length;
+                        const total = Object.keys(data.players || {}).length;
+                        if (readyCount >= Math.max(4, Math.floor(total * 0.9))) {
+                            document.getElementById("hostStartButton").classList.remove("hidden");
+                        } else {
+                            document.getElementById("hostStartButton").classList.add("hidden");
+                        }
+                    }
+                } else if (data.status === "dealing") {
+                    if (document.getElementById("dealing-screen").classList.contains("hidden")) {
+                        showScreen("dealing-screen");
+                        initializeDealingScreen(data);
+                        
+                        window.allReadyTriggered = false;
+                        let timeLeft = 30; 
+                        const statusEl = document.getElementById("dealingStatusText");
+                        if (statusEl) statusEl.innerText = `Tự động vào game sau ${timeLeft}s...`;
+                        
+                        if (dealCountdownInterval) clearInterval(dealCountdownInterval);
+                        dealCountdownInterval = setInterval(() => {
+                            timeLeft--;
+                            if (statusEl && timeLeft > 0 && !window.allReadyTriggered) {
+                                statusEl.innerText = `Tự động vào game sau ${timeLeft}s...`;
+                            }
+                        }, 1000);
+
+                        if (isHost) {
+                            dealAutoStartTimer = setTimeout(() => {
+                                if (currentGameData.status === "dealing") {
+                                    roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0 });
+                                }
+                            }, 30000); 
+                        }
+                    }
+                    
+                    const playersList = Object.values(data.players || {});
+                    if (playersList.length > 0 && playersList.every(p => p.ready === true)) {
+                        if (!window.allReadyTriggered) {
+                            window.allReadyTriggered = true; 
+                            
+                            let timeAllReady = 5;
+                            const statusEl = document.getElementById("dealingStatusText");
+                            if (statusEl) statusEl.innerText = `Tất cả đã sẵn sàng! Vào game sau ${timeAllReady}s...`;
+                            
+                            if (dealCountdownInterval) clearInterval(dealCountdownInterval);
+                            dealCountdownInterval = setInterval(() => {
+                                timeAllReady--;
+                                if (statusEl && timeAllReady > 0) {
+                                    statusEl.innerText = `Tất cả đã sẵn sàng! Vào game sau ${timeAllReady}s...`;
+                                }
+                            }, 1000);
+                            
+                            if (isHost) {
+                                if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
+                                dealAllReadyTimer = setTimeout(() => {
+                                    if (currentGameData.status === "dealing") {
+                                        roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0 });
+                                    }
+                                }, 5000);
+                            }
+                        }
+                    }
+                } else if (data.status === "playing") {
+                    if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
+                    if (dealAllReadyTimer) clearTimeout(dealAllReadyTimer);
+                    if (dealCountdownInterval) clearInterval(dealCountdownInterval);
+                    
+                    if (document.getElementById("game-screen").classList.contains("hidden")) showScreen("game-screen");
+                    handleCurrentPhase(data);
+                    renderChat(data.chat);
+                } else if (data.status === "ended") {
+                    showEndGameScreen(data);
+                }
+            });
+            
+            db.ref("vua_sau_rieng_rooms/" + currentRoomCode + "/dayVoteResult").on("value", snapshot => {
+                const result = snapshot.val();
+                if (result && currentGameData && currentGameData.phase === "day") {
+                    window.currentVoteResultShown = result.day;
+                    
+                    let countdown = 5;
+                    showVoteResult(result.title, `${result.subtitle} (Sang đêm sau ${countdown}s)`);
+                    
+                    if (window.voteResultInterval) clearInterval(window.voteResultInterval);
+                    window.voteResultInterval = setInterval(() => {
+                        countdown--;
+                        if (countdown > 0) {
+                            showVoteResult(result.title, `${result.subtitle} (Sang đêm sau ${countdown}s)`);
+                        } else {
+                            clearInterval(window.voteResultInterval);
+                        }
+                    }, 1000);
+                }
+            });
+        }
+        
+        function renderWaitingRoom(data) {
+            const container = document.getElementById("waitingPlayerList");
+            container.innerHTML = "";
+            Object.entries(data.players || {}).forEach(([id, player]) => {
+                const div = document.createElement("div");
+                div.className = `player-item ${player.alive ? '' : 'dead'}`;
+                div.innerHTML = `<span>${player.name}</span> ${player.ready ? `<span style="color:var(--green-main); font-size:1.4rem;">✔</span>` : `<span style="color:var(--durian-dark); font-size:1.4rem;">⏳</span>`}`;
+                container.appendChild(div);
+            });
+            document.getElementById("roomStatusText").innerHTML = `Đã có <strong>${Object.keys(data.players || {}).length}</strong> người • Chờ sẵn sàng`;
+            
+            const myPlayer = data.players[myPlayerId];
+            if (myPlayer) {
+                const btn = document.getElementById("readyButton");
+                if (myPlayer.ready) {
+                    btn.innerText = "ĐÃ SẴN SÀNG";
+                    btn.style.background = "var(--green-main)";
+                } else {
+                    btn.innerText = "👌 TÔI SẴN SÀNG";
+                    btn.style.background = "var(--durian)";
+                }
+            }
+        }
+        
+        function toggleReadyStatus() {
+            if (!roomRef) return;
+            const currentReady = currentGameData.players && currentGameData.players[myPlayerId] ? currentGameData.players[myPlayerId].ready : false;
+            roomRef.child("players/" + myPlayerId + "/ready").set(!currentReady);
+            playSound('ready');
+        }
+        
+        function forceStartAsHost() {
+            if (!isHost) return;
+            const total = Object.keys(currentGameData.players || {}).length;
+            if (total < 4) return alert("Cần ít nhất 4 người để bắt đầu!");
+            if (confirm(`Bắt đầu game với ${total} người chơi?`)) {
+                playSound('click');
+                distributeRolesToAllPlayers();
+                roomRef.child("status").set("dealing");
+            }
+        }
+        
+        function distributeRolesToAllPlayers() {
+            const playersSnapshot = currentGameData.players || {};
+            const playerIds = Object.keys(playersSnapshot);
+            const total = playerIds.length;
+            
+            let wolfTarget = Math.max(1, Math.floor(total * 0.2)); 
+            let thirdTarget = total >= 7 ? 1 : 0;
+            let villageTarget = total - wolfTarget - thirdTarget;
+
+            let wolvesPool = shuffleArray(CLASS_CARDS.filter(c => c.team === "wolf"));
+            let thirdPool = shuffleArray(CLASS_CARDS.filter(c => c.team === "third"));
+            let villagePool = shuffleArray(CLASS_CARDS.filter(c => c.team === "village"));
+
+            let deck = [];
+            
+            let dauBao = wolvesPool.find(w => w.cardName.includes("Đậu Bảo"));
+            if (dauBao) { deck.push(dauBao); wolvesPool = wolvesPool.filter(w => w.id !== dauBao.id); wolfTarget--; }
+            
+            for(let i=0; i<wolfTarget; i++) deck.push(wolvesPool[i % wolvesPool.length]);
+            for(let i=0; i<thirdTarget; i++) deck.push(thirdPool[i % thirdPool.length]);
+            for(let i=0; i<villageTarget; i++) deck.push(villagePool[i % villagePool.length]);
+
+            let cunIdx = deck.findIndex(c => c.cardName === "Cún");
+            let thuyIdx = deck.findIndex(c => c.cardName === "Thùy");
+
+            if (cunIdx !== -1 && thuyIdx === -1) {
+                let replaceIdx = deck.findIndex(c => c.team === "village" && c.cardName !== "Cún");
+                if (replaceIdx !== -1) deck[replaceIdx] = CLASS_CARDS.find(c => c.cardName === "Thùy");
+            } else if (cunIdx === -1 && thuyIdx !== -1) {
+                let replaceIdx = deck.findIndex(c => c.team === "village" && c.cardName !== "Thùy");
+                if (replaceIdx !== -1) deck[replaceIdx] = CLASS_CARDS.find(c => c.cardName === "Cún");
+            }
+
+            deck = shuffleArray(deck);
+            
+            const updates = {};
+            playerIds.forEach((id, index) => {
+                updates["players/" + id + "/role"] = deck[index];
+                updates["players/" + id + "/team"] = deck[index].team;
+                updates["players/" + id + "/ready"] = false; 
+            });
+            roomRef.update(updates);
+        }
+        
+        function initializeDealingScreen(data) {
+            const container = document.getElementById("fullDeckContainer");
+            container.innerHTML = `<canvas id="particleCanvas" width="${container.offsetWidth}" height="${container.offsetHeight}"></canvas>`;
+            
+            particleCanvas = document.getElementById("particleCanvas");
+            particleCtx = particleCanvas.getContext("2d");
+            animateParticles();
+            
+            if (currentGameData.players && currentGameData.players[myPlayerId] && currentGameData.players[myPlayerId].role && currentGameData.players[myPlayerId].ready) {
+                myRole = currentGameData.players[myPlayerId].role;
+                container.innerHTML += `
+                    <div class="deal-card selected-center flipped" style="transition: none; transform: translate(-50%, -50%) scale(1.3); opacity: 1;">
+                        <div class="deal-card-inner">
+                            <div class="card-face back" style="padding: 10px 6px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; width: 100%;">
+                                    <div style="width: 100%;">
+                                        <div class="role-name" style="font-size: 14px !important; margin: 0 0 2px 0;">${myRole.cardName}</div>
+                                        <div class="role-badge" style="padding: 2px 4px; font-size: 9px; margin: 0 auto;">${myRole.role}</div>
+                                    </div>
+                                    <p style="font-size: 10px !important; line-height: 1.1; margin: 4px 0; flex-grow: 1; display:flex; align-items:center; justify-content:center;">${myRole.desc}</p>
+                                    <button style="margin: 0; padding: 4px; font-size: 11px; width:100%; border-radius: 8px; border-width: 2px; box-shadow: 0px 2px 0px var(--dark);" disabled>ĐÃ SẴN SÀNG</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            for (let i = 0; i < 12; i++) {
+                const card = document.createElement("div");
+                card.className = "deal-card";
+                card.id = "dealCard_" + i;
+                card.innerHTML = `<div class="deal-card-inner"><div class="card-face front"><div style="font-size:2.5rem; filter: drop-shadow(2px 2px 0px #1E293B);">🍈</div></div><div class="card-face back" id="dealCardBack_${i}" style="padding: 10px 6px;"></div></div>`;
+                card.onclick = () => handlePickOneCard(i, 12);
+                container.appendChild(card);
+                setTimeout(() => { card.classList.add("spread"); }, 100 + (i * 80));
+            }
+        }
+        
+        function handlePickOneCard(selectedIndex, totalCards) {
+            if (!currentGameData.players[myPlayerId] || !currentGameData.players[myPlayerId].role) return alert("⏳ Đang xào bài...");
+            myRole = currentGameData.players[myPlayerId].role;
+            playSound('cardPick');
+            
+            for (let i = 0; i < totalCards; i++) {
+                const card = document.getElementById("dealCard_" + i);
+                if (i !== selectedIndex) { card.classList.remove("spread"); card.classList.add("fade-out"); }
+            }
+            const selectedCard = document.getElementById("dealCard_" + selectedIndex);
+            selectedCard.classList.remove("spread"); 
+            selectedCard.classList.add("selected-center");
+
+            document.getElementById("dealCardBack_" + selectedIndex).innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; width: 100%;">
+                    <div style="width: 100%;">
+                        <div class="role-name" style="font-size: 14px !important; margin: 0 0 2px 0;">${myRole.cardName}</div>
+                        <div class="role-badge" style="padding: 2px 4px; font-size: 9px; margin: 0 auto;">${myRole.role}</div>
+                    </div>
+                    <p style="font-size: 10px !important; line-height: 1.1; margin: 4px 0; flex-grow: 1; display:flex; align-items:center; justify-content:center;">${myRole.desc}</p>
+                    <button onclick="confirmMyRoleAndReady(event)" style="margin: 0; padding: 4px; font-size: 11px; width:100%; border-radius: 8px; border-width: 2px; box-shadow: 0px 3px 0px var(--dark);">SẴN SÀNG</button>
+                </div>
+            `;
+            
+            setTimeout(() => { 
+                selectedCard.classList.add("flipped"); 
+                playSound('flip');
+                
+                const rect = selectedCard.getBoundingClientRect();
+                const containerRect = document.getElementById("fullDeckContainer").getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2 - containerRect.left;
+                const centerY = rect.top + rect.height / 2 - containerRect.top;
+                emitParticles(centerX, centerY, 50);
+            }, 600);
+        }
+        
+        function confirmMyRoleAndReady(e) {
+            e.stopImmediatePropagation();
+            if (!roomRef) return;
+            
+            e.target.innerText = "CHỜ TÍ...";
+            e.target.disabled = true;
+            
+            roomRef.child("players/" + myPlayerId + "/ready").set(true);
+            playSound('success');
+        }
+        
+        function handleCurrentPhase(data) {
+            currentPhase = data.phase || "night";
+            document.getElementById("nightPhase").classList.add("hidden");
+            document.getElementById("dayPhase").classList.add("hidden");
+            
+            if (!window.currentVoteResultShown || window.currentVoteResultShown !== data.dayNumber) {
+                document.getElementById("voteResultPanel").classList.add("hidden");
+            }
+            
+            document.getElementById("phaseHeaderContainer").innerHTML = `
+                NGÀY ${data.dayNumber || 1} • <span style="color:${currentPhase === 'night' ? '#94A3B8' : '#F59E0B'}">${currentPhase === 'night' ? '🌒 ĐÊM XUỐNG' : '☀️ TRỜI SÁNG'}</span>`;
+            
+            if (currentPhase === "night") {
+                handleNightSequence(data);
+                document.getElementById("nightPhase").classList.remove("hidden");
+            } else if (currentPhase === "day") {
+                startDayDiscussion(data);
+                document.getElementById("dayPhase").classList.remove("hidden");
+            }
+        }
+        
+        function handleNightSequence(data) {
+            const callerDiv = document.getElementById("nightCaller");
+            const actionPanel = document.getElementById("nightActionPanel");
+            const playerList = Object.keys(data.players || {});
+            let currentIndex = data.currentNightIndex || 0;
+            
+            if (isHost && currentIndex < playerList.length) {
+                let nextIdx = currentIndex;
+                while (nextIdx < playerList.length) {
+                    let p = data.players[playerList[nextIdx]];
+                    if (p && p.alive === true && p.team !== "ghost") break;
+                    nextIdx++;
+                }
+                if (nextIdx !== currentIndex) {
+                    roomRef.update({ currentNightIndex: nextIdx });
+                    return; 
+                }
+            }
+            
+            if (currentIndex >= playerList.length) {
+                if (isHost && currentGameData.phase === "night") {
+                    let nightActions = currentGameData.nightActions || {};
+                    let killed = [];
+                    let wolvesKills = nightActions.wolves || {};
+                    
+                    let guards = nightActions.guards || {};
+                    let guardedTargets = Object.values(guards);
+                    
+                    Object.values(wolvesKills).forEach(target => {
+                        if (target && !guardedTargets.includes(target) && nightActions.witch !== "save") {
+                            if (!killed.includes(target)) killed.push(target);
+                        }
+                    });
+                    
+                    if (nightActions.witch === "poison" && nightActions.witchTarget) {
+                        if (!killed.includes(nightActions.witchTarget)) killed.push(nightActions.witchTarget);
+                    }
+                    
+                    let hunterTarget = nightActions.hunterTarget;
+                    let hunterDead = false;
+                    Object.keys(currentGameData.players).forEach(pKey => {
+                        let p = currentGameData.players[pKey];
+                        if (p.role && p.role.cardName === "Người trồng sầu riêng" && killed.includes(p.name)) {
+                            hunterDead = true;
+                        }
+                    });
+                    if (hunterDead && hunterTarget && !killed.includes(hunterTarget)) {
+                        killed.push(hunterTarget);
+                    }
+
+                    let updates = { 
+                        phase: "day", votes: null, currentNightIndex: 0, lastNightKills: killed,
+                        "nightActions/wolves": null, "nightActions/witch": null, 
+                        "nightActions/witchTarget": null, "nightActions/guards": null,
+                        "nightActions/hunterTarget": nightActions.hunterTarget || null
+                    };
+                    
+                    let aliveVillagers = 0;
+                    let aliveWolves = 0;
+                    
+                    Object.keys(currentGameData.players).forEach(pKey => {
+                        let p = currentGameData.players[pKey];
+                        let isDead = killed.includes(p.name) || p.alive === false;
+                        
+                        if (!isDead && p.team !== "ghost") {
+                            if (p.team === "village") aliveVillagers++;
+                            if (p.team === "wolf") aliveWolves++;
+                        }
+                        
+                        if (killed.includes(p.name)) {
+                            updates["players/" + pKey + "/alive"] = false;
+                        }
+                    });
+                    
+                    if (aliveWolves === 0) {
+                        updates.status = "ended"; updates.winner = "village";
+                    } else if (aliveVillagers === 0) {
+                        updates.status = "ended"; updates.winner = "wolf";
+                    }
+
+                    roomRef.update(updates);
+                }
+                return;
+            }
+            
+            const currentPlayerId = playerList[currentIndex];
+            const currentPlayer = data.players[currentPlayerId];
+            const me = data.players[myPlayerId];
+            const isQuangHao = me && me.alive === true && myRole && myRole.cardName === "Quang Hảo";
+            
+            if (!currentPlayer || currentPlayer.alive !== true || currentPlayer.team === "ghost") {
+                callerDiv.innerHTML = `<span style="color:#94A3B8; font-style:italic;">Đang lướt qua người đã khuất...</span>`;
+                actionPanel.classList.add("hidden");
+                return;
+            }
+            
+            if (!me.alive || (isQuangHao && currentPlayerId !== myPlayerId)) {
+                let prefix = !me.alive ? "👻 GÓC NHÌN HỒN MA" : "👁️ GÓC NHÌN TI HÍ";
+                callerDiv.innerHTML = `<strong>${prefix}</strong><br><span style="font-size:1rem;">Hệ thống đang gọi:</span> <span style="font-size:1.6rem; color:var(--durian); font-weight:bold; border-bottom: 2px dashed var(--durian);">${currentPlayer ? currentPlayer.name : '...'}</span>`;
+                actionPanel.classList.remove("hidden");
+                
+                if (currentPlayer && currentPlayer.alive && currentPlayer.role) {
+                    renderRoleSpecificNightAction(currentPlayer.role, true);
+                } else {
+                    document.getElementById("nightActionContent").innerHTML = "<p>Đang lướt qua người đã chết...</p>";
+                }
+                return;
+            }
+            
+            if (currentPlayerId === myPlayerId) {
+                if (isQuangHao) {
+                    callerDiv.innerHTML = `🌙 <strong>${myName}</strong>, chốt sổ thôi!`;
+                    actionPanel.classList.remove("hidden");
+                    document.getElementById("nightActionContent").innerHTML = `<p style="font-size:1.2rem; font-weight: 600;">Ti hí xong chưa? Bấm đi ngủ nào.</p><button onclick="finishNightAction()" style="margin-top:15px; width:100%; background:#CBD5E1;">Đi ngủ</button>`;
+                    return;
+                }
+                callerDiv.innerHTML = `🌙 Dậy đi <strong>${myName}</strong> ơi!`;
+                actionPanel.classList.remove("hidden");
+                renderRoleSpecificNightAction(myRole, false);
+            } else {
+                callerDiv.innerHTML = `Đang gọi:<br><strong style="font-size: 1.8rem; color: var(--durian);">${currentPlayer ? currentPlayer.name : '...'}</strong>`;
+                actionPanel.classList.add("hidden");
+            }
+        }
+        
+        function renderRoleSpecificNightAction(roleData, isSpectator) {
+            const container = document.getElementById("nightActionContent");
+            const role = roleData.role;
+            const team = roleData.team;
+            
+            let html = `
+                <div id="nightTimerDisplay" style="font-size:3.5rem; font-weight:700; color:var(--dark); margin-bottom:10px; font-variant-numeric: tabular-nums;">60</div>
+                <div style="background:#F1F5F9; padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 3px solid var(--dark); box-shadow: inset 0px 4px 0px rgba(0,0,0,0.05);">
+                    <strong style="color:var(--dark); font-size:1.3rem; display:block; margin-bottom:5px;">${roleData.cardName}</strong>
+                    <span style="font-size: 1rem; color: #475569;">${roleData.desc}</span>
+                </div>
+            `;
+            
+            let pointerEvt = isSpectator ? 'pointer-events: none; opacity: 0.5;' : '';
+            html += `<div style="${pointerEvt} text-align: center;">`;
+            
+            if (roleData.cardName === "Cún") {
+                 let thuyPlayer = Object.values(currentGameData.players).find(p => p.role && p.role.cardName === "Thùy");
+                 if (thuyPlayer) {
+                     html += `<p style="color:#047857; font-weight:bold; font-size: 1.1rem; margin-bottom: 15px; background: #D1FAE5; padding: 5px; border-radius: 10px; border: 2px solid #059669;">👧 Thùy của bạn là: ${thuyPlayer.name} ${thuyPlayer.alive ? '' : '(Đã chết)'}</p>`;
+                 }
+            } else if (roleData.cardName === "Thùy") {
+                 let cunPlayer = Object.values(currentGameData.players).find(p => p.role && p.role.cardName === "Cún");
+                 if (cunPlayer) {
+                     html += `<p style="color:#047857; font-weight:bold; font-size: 1.1rem; margin-bottom: 15px; background: #D1FAE5; padding: 5px; border-radius: 10px; border: 2px solid #059669;">🐶 Cún của bạn là: ${cunPlayer.name} ${cunPlayer.alive ? '' : '(Đã chết)'}</p>`;
+                 }
+            }
+            
+            if (team === "wolf" || role.includes("ăn vụng") || role.includes("Vua sầu riêng") || role === "Sói đội lốt cừu" || role === "Ảo thuật gia") {
+                const wolfMates = Object.values(currentGameData.players).filter(p => p.team === 'wolf').map(p => p.name).join(', ');
+                html += `<p style="color:var(--danger-dark); font-weight:bold; font-size: 1.1rem; margin-bottom: 15px; background: #FFE4E6; padding: 5px; border-radius: 10px; border: 2px solid var(--danger-dark);">🐺 Bầy sói: ${wolfMates}</p>`;
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.team !== "wolf" && p.name !== myName) {
+                        html += `<button onclick="wolfChooseVictim('${p.name}')">${p.name}</button>`;
+                    }
+                });
+            } else if (role === "Quỳnh Anh") {
+                if (currentGameData.quynhAnhUsed) {
+                    html += `<p style="color:var(--danger-dark); font-weight:bold; font-size: 1.2rem;">❌ Bạn đã hết quyền Khóa Mõm trong ván này!</p>`;
+                } else {
+                    html += `<p style="color:var(--danger-dark); font-weight:bold; margin-bottom: 10px;">Chỉ được chọn 1 LẦN DUY NHẤT trong cả game:</p>`;
+                    Object.values(currentGameData.players || {}).forEach(p => {
+                        if (p.alive === true && p.name !== myName) html += `<button onclick="quynhAnhLockVote('${p.name}')">${p.name}</button>`;
+                    });
+                }
+            } else if (role === "Sao Kê") {
+                html += `<div style="margin-bottom: 15px;">
+                            <button onclick="witchAction('save')" style="background:var(--green-main);">CỨU NGƯỜI</button> 
+                            <button onclick="witchAction('skip')" style="background:#CBD5E1;">Bỏ qua</button>
+                         </div>`;
+                html += `<p style="font-size:1.1rem; font-weight:700; color:var(--danger-dark); margin-bottom: 10px;">Hoặc dùng thuốc ĐỘC (chọn 1 người):</p>`;
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.name !== myName) html += `<button onclick="witchAction('poison', '${p.name}')" style="background:var(--danger); padding:8px 12px; font-size:14px; box-shadow: 0px 3px 0px var(--dark);">Độc ${p.name}</button>`;
+                });
+            } else if (role === "Tiên tri" || role === "Thanh Nhàn") {
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.name !== myName) html += `<button onclick="seerCheck('${p.name}')">${p.name}</button>`;
+                });
+            } else if (role === "Doraemon bel" || role === "Lương Xuân Bá") {
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true) html += `<button onclick="guardProtect('${p.name}')">${p.name}</button>`;
+                });
+            } else if (role === "Phương Anh") {
+                html += `<p style="color:var(--dark); font-weight:bold; margin-bottom: 10px;">Chọn 1 người để soi xem hôm qua họ vote ai:</p>`;
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.name !== myName) html += `<button onclick="phuongAnhCheck('${p.name}')">${p.name}</button>`;
+                });
+            } else if (role === "Người trồng sầu riêng") {
+                html += `<p style="color:var(--danger-dark); font-weight:bold; margin-bottom: 10px;">Ghim 1 người. Nếu bạn bị chết, người đó sẽ chết chùm:</p>`;
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.name !== myName) html += `<button onclick="hunterChoose('${p.name}')">Ghim ${p.name}</button>`;
+                });
+            } else if (["Hoài Anh", "Thằng giấu xe", "Đậu mất xe", "Minh Nguyên", "Alo em ăn cơm chưa"].includes(roleData.cardName)) {
+                html += `<p style="color:var(--dark); font-weight:bold; margin-bottom: 10px;">Chọn 1 mục tiêu để dùng kỹ năng:</p>`;
+                Object.values(currentGameData.players || {}).forEach(p => {
+                    if (p.alive === true && p.name !== myName) html += `<button onclick="genericAction('${p.name}')">Chọn ${p.name}</button>`;
+                });
+            } else {
+                html += `<p style="color: #64748B; font-style: italic; font-weight: 500;">(Chức năng tự động, bạn cứ nằm yên đi)</p>`;
+            }
+            html += `</div>`;
+
+            if (!isSpectator) {
+                html += `<button onclick="finishNightAction()" style="margin-top:20px; width:100%; background:#94A3B8; border-color: var(--dark); color: var(--white);">Xong & Ngủ</button>`;
+            }
+            
+            container.innerHTML = html;
+
+            let timeLeft = 60;
+            const timerEl = document.getElementById("nightTimerDisplay");
+            if (nightTimer) clearInterval(nightTimer);
+            
+            nightTimer = setInterval(() => {
+                timeLeft--;
+                if (timerEl) timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(nightTimer);
+                    if (!isSpectator) {
+                        finishNightAction();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function quynhAnhLockVote(targetName) { 
+            if (roomRef) {
+                roomRef.child("nightActions/quynhAnhTarget").set(targetName); 
+                roomRef.child("quynhAnhUsed").set(true); 
+            }
+            playSound('click');
+            finishNightAction(); 
+        }
+
+        function wolfChooseVictim(name) { 
+            if (roomRef) roomRef.child("nightActions/wolves/" + myPlayerId).set(name); 
+            playSound('click');
+            finishNightAction(); 
+        }
+
+        function witchAction(type, targetName = null) { 
+            if (roomRef) {
+                roomRef.child("nightActions/witch").set(type); 
+                if (type === 'poison' && targetName) {
+                    roomRef.child("nightActions/witchTarget").set(targetName);
+                }
+            }
+            playSound('click');
+            finishNightAction(); 
+        }
+
+        function guardProtect(name) { 
+            if (roomRef) roomRef.child("nightActions/guards/" + myPlayerId).set(name); 
+            playSound('click');
+            finishNightAction(); 
+        }
+        
+        function phuongAnhCheck(name) { 
+            const targetId = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === name);
+            const lastVotes = currentGameData.lastDayVotes || {};
+            const voteTarget = lastVotes[targetId];
+            if (voteTarget && voteTarget !== "SKIP") {
+                alert(`🕵️ Hôm qua [${name}] đã vote cho: ${voteTarget}`);
+            } else {
+                alert(`🕵️ Hôm qua [${name}] KHÔNG VOTE hoặc BỎ QUA.`);
+            }
+            playSound('success');
+            finishNightAction(); 
+        }
+
+        function hunterChoose(name) {
+            if (roomRef) roomRef.child("nightActions/hunterTarget").set(name);
+            alert(`🎯 Đã ghim ${name}! Nếu bạn chết, hắn sẽ chết theo.`);
+            playSound('click');
+            finishNightAction();
+        }
+
+        function genericAction(name) {
+            alert(`✅ Đã dùng kỹ năng lên: ${name}`);
+            playSound('click');
+            finishNightAction();
+        }
+
+        function seerCheck(name) { 
+            const target = Object.values(currentGameData.players || {}).find(p => p.name === name);
+            if (!target) return finishNightAction();
+
+            let resultText = "";
+            if (myRole.cardName === "Tiên tri") {
+                if (target.role.id === 34) resultText = "Nông dân 🧑‍🌾"; 
+                else if (target.team === "wolf") resultText = "Sói/Sầu Riêng 🐺"; 
+                else resultText = "Nông dân 🧑‍🌾"; 
+                alert(`🔮 Kết quả soi: [${name}] là ${resultText}`);
+            } else if (myRole.cardName === "Thanh Nhàn") {
+                if (target.role.role === "Cư dân sầu riêng" || target.role.role === "Đậu Bảo") resultText = "KHÔNG CÓ chức năng ❌";
+                else resultText = "CÓ chức năng đặc biệt ⚡";
+                alert(`🧪 Hóa Chó: [${name}] ${resultText}`);
+            } else {
+                alert(`Đã ghi nhận tương tác với: ${name}`);
+            }
+            playSound('success');
+            finishNightAction(); 
+        }
+        
+        function finishNightAction() {
+            if (nightTimer) clearInterval(nightTimer);
+            if (roomRef) {
+                let idx = (currentGameData.currentNightIndex || 0) + 1;
+                roomRef.update({ currentNightIndex: idx });
+            }
+            document.getElementById("nightActionPanel").classList.add("hidden");
+        }
+        
+        function startDayDiscussion(data) {
+            const timerEl = document.getElementById("dayTimerDisplay");
+            pendingVoteTarget = null;
+            window.isCalculatingVote = false;
+            
+            let killMsg = (data.lastNightKills && data.lastNightKills.length > 0) 
+                ? `<div style="font-size:1.1rem; color:var(--danger-dark); margin-bottom:5px; font-weight:700;">💀 Đứt bóng: ${data.lastNightKills.join(", ")}!</div>`
+                : `<div style="font-size:1.1rem; color:var(--green-main); margin-bottom:5px; font-weight:700;">🌅 Đêm qua an toàn!</div>`;
+            
+            if (!window.currentDayNum || window.currentDayNum !== data.dayNumber) {
+                window.currentDayNum = data.dayNumber;
+                window.timeLeftDay = 120;
+            }
+            
+            if (gameTimer) clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (window.isCalculatingVote) return; 
+                
+                const aliveC = Object.values(currentGameData.players || {}).filter(p => p.alive === true && p.team !== "ghost").length;
+                const voteC = Object.keys(currentGameData.votes || {}).length;
+                
+                if (voteC >= aliveC && aliveC > 0 && window.timeLeftDay > 0) window.timeLeftDay = 0; 
+                else window.timeLeftDay--;
+                
+                if (window.timeLeftDay < 0) window.timeLeftDay = 0;
+                const m = Math.floor(window.timeLeftDay / 60);
+                const s = window.timeLeftDay % 60;
+                timerEl.innerHTML = killMsg + `${m}:${s < 10 ? '0' : ''}${s}`;
+                
+                if (window.timeLeftDay <= 0 && !window.isCalculatingVote) {
+                    window.isCalculatingVote = true; 
+                    clearInterval(gameTimer);
+                    if (isHost) calculateDayVoteResult();
+                }
+            }, 1000);
+            
+            const lockedPlayer = data.nightActions ? data.nightActions.quynhAnhTarget : null;
+            if (lockedPlayer === myName && (!window.alertedLockDay || window.alertedLockDay !== data.dayNumber)) {
+                alert("⚠️ Ủa alo? Bạn đã bị Quỳnh Anh khóa miệng! Phiếu của bạn hôm nay vô tác dụng.");
+                window.alertedLockDay = data.dayNumber;
+            }
+            
+            const me = data.players[myPlayerId];
+            const voteSection = document.getElementById("voteSection");
+            
+            if (data.votes && data.votes[myPlayerId]) {
+                 voteSection.innerHTML = `<p style='color:var(--green-main); font-size:1.3rem; font-weight:700;'>✅ Đã chốt đơn. Ngồi chơi xơi nước...</p>`;
+            } else if (!me.alive) {
+                voteSection.innerHTML = "<p style='color:var(--danger-dark); font-size:1.2rem; font-weight:700;'>👻 Bạn tạch rồi. Chỉ được chat, không được vote.</p>";
+            } else {
+                voteSection.innerHTML = `
+                    <p style="margin:10px 0; color:var(--dark); font-size:1.2rem; font-weight:600;">Ai là kẻ thủ ác? Trảm nó!</p>
+                    <div class="player-list" id="dayVoteList"></div>
+                    <button id="skipVoteBtn" onclick="selectVote('SKIP')" style="background:#E2E8F0; width:100%; border-radius:16px;">⏭️ BỎ QUA</button>
+                    
+                    <div id="confirmVoteSection" class="hidden" style="margin-top: 15px; padding: 20px; border-radius: 16px; background: #FEF9C3; border: 3px solid var(--dark); box-shadow: var(--shadow-solid-sm);">
+                        <p style="font-weight: 600; font-size: 1.1rem;">Chốt sổ đứa này: <strong id="selectedVoteName" style="color:var(--danger-dark); font-size:1.5rem; text-decoration: underline;"></strong>?</p>
+                        <button onclick="confirmVote()" style="background:var(--green-main); color:var(--dark); width:100%; margin-top:10px;">✅ CHỐT</button>
+                    </div>
+                `;
+                renderDayVoteButtons(data);
+            }
+        }
+        
+        function renderDayVoteButtons(data) {
+            const container = document.getElementById("dayVoteList");
+            if (!container) return;
+            container.innerHTML = "";
+            Object.values(data.players || {}).forEach(player => {
+                if (player.alive !== true) return;
+                if (player.name === myName) return; 
+
+                const btn = document.createElement("button");
+                btn.style.margin = "5px"; 
+                btn.style.padding = "10px 16px"; 
+                btn.style.background = "var(--white)";
+                btn.style.color = "var(--dark)";
+                btn.style.boxShadow = "2px 2px 0px var(--dark)";
+                btn.innerText = player.name;
+                btn.id = `voteBtn_${player.name}`;
+                btn.onclick = () => selectVote(player.name);
+                container.appendChild(btn);
+            });
+        }
+        
+        function selectVote(target) {
+            pendingVoteTarget = target;
+            document.getElementById("confirmVoteSection").classList.remove("hidden");
+            document.getElementById("selectedVoteName").innerText = target === 'SKIP' ? 'BỎ QUA MÀ ĐÚNG KHÔNG' : target;
+            
+            document.querySelectorAll("#dayVoteList button, #skipVoteBtn").forEach(btn => { 
+                btn.style.borderColor = "var(--dark)";
+                if(btn.id !== 'skipVoteBtn') {
+                    btn.style.background = "var(--white)";
+                    btn.style.color = "var(--dark)";
+                }
+            });
+            
+            let selectedBtn = target === 'SKIP' ? document.getElementById("skipVoteBtn") : document.getElementById(`voteBtn_${target}`);
+            if(selectedBtn) { 
+                if(target !== 'SKIP') {
+                    selectedBtn.style.background = "var(--durian)";
+                }
+            }
+            playSound('click');
+        }
+
+        function confirmVote() {
+            if (!roomRef || !pendingVoteTarget) return;
+            roomRef.child("votes/" + myPlayerId).set(pendingVoteTarget);
+            document.getElementById("voteSection").innerHTML = `<p style='color:var(--green-main); font-size:1.3rem; font-weight:700;'>✅ CHỐT! Chờ xem drama...</p>`;
+            playSound('success');
+        }
+        
+        function calculateDayVoteResult() {
+            if (!roomRef || !isHost || currentGameData.phase !== "day") return;
+            
+            const votes = currentGameData.votes || {};
+            const lockedPlayer = currentGameData.nightActions ? currentGameData.nightActions.quynhAnhTarget : null;
+            const voteCount = {};
+            
+            let lockedPlayerId = null;
+            if (lockedPlayer) lockedPlayerId = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === lockedPlayer);
+            
+            Object.entries(votes).forEach(([voterId, targetName]) => {
+                if (targetName === "SKIP" || voterId === lockedPlayerId) return;
+                const voter = currentGameData.players[voterId];
+                
+                let weight = 1;
+                if (voter && voter.role) {
+                    if (voter.role.cardName === "Lê Hoàng Hải") weight = 2;
+                    if (voter.role.cardName === "Cún") {
+                        let thuy = Object.values(currentGameData.players).find(p => p.role && p.role.cardName === "Thùy");
+                        if (thuy && thuy.alive === false) weight = 2;
+                    }
+                    if (voter.role.cardName === "Thùy") {
+                        let cun = Object.values(currentGameData.players).find(p => p.role && p.role.cardName === "Cún");
+                        if (cun && cun.alive === false) weight = 2;
+                    }
+                }
+                voteCount[targetName] = (voteCount[targetName] || 0) + weight;
+            });
+            
+            let maxVotes = 0, eliminated = null, isTie = false;
+            Object.entries(voteCount).forEach(([name, count]) => {
+                if (count > maxVotes) { maxVotes = count; eliminated = name; isTie = false; } 
+                else if (count === maxVotes) { isTie = true; }
+            });
+            
+            const requiredVotes = Math.ceil(alivePlayersCount * 0.75);
+            
+            let finalTitle = "";
+            let finalSubtitle = "";
+            
+            if (isTie) {
+                finalTitle = "⚖️ HUỀ CẢ LÀNG";
+                finalSubtitle = `Số phiếu bằng nhau. Cả lớp đi ngủ...`;
+            } else if (eliminated && maxVotes >= requiredVotes) {
+                const playerKey = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === eliminated);
+                if (playerKey) {
+                    roomRef.child("players/" + playerKey + "/alive").set(false);
+                    finalTitle = `💀 <span style="text-decoration:underline;">${eliminated}</span> LÊN BẢNG ĐẾM SỐ!`;
+                    finalSubtitle = `Bị tế với ${maxVotes}/${alivePlayersCount} phiếu (>= 75%). Đi ngủ...`;
+                    
+                    let p = currentGameData.players[playerKey];
+                    if (p && p.role && p.role.cardName === "Người trồng sầu riêng") {
+                        const hTarget = currentGameData.nightActions ? currentGameData.nightActions.hunterTarget : null;
+                        if (hTarget) {
+                            const hTargetKey = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === hTarget);
+                            if (hTargetKey && currentGameData.players[hTargetKey].alive === true) {
+                                roomRef.child("players/" + hTargetKey + "/alive").set(false);
+                                finalSubtitle = `Bị tế với ${maxVotes} phiếu. Người trồng sầu riêng đã nổ súng kéo theo ${hTarget} chết cùng! Đi ngủ...`;
+                            }
+                        }
+                    }
+                }
+            } else {
+                finalTitle = "🕊️ KHÔNG AI BỊ TẾ";
+                finalSubtitle = `Phiếu cao nhất (${maxVotes}) chưa đạt 75% (cần ${requiredVotes} phiếu). Đi ngủ...`;
+            }
+            
+            roomRef.update({ 
+                dayVoteResult: { title: finalTitle, subtitle: finalSubtitle, day: currentGameData.dayNumber },
+                lastDayVotes: votes || {} 
+            });
+            
+            setTimeout(() => {
+                if (roomRef) {
+                    roomRef.once("value", snap => {
+                        let d = snap.val();
+                        if (!d) return;
+                        
+                        let vCount = 0; let wCount = 0;
+                        Object.values(d.players || {}).forEach(p => {
+                            if (p.alive === true && p.team !== "ghost") {
+                                if (p.team === "village") vCount++;
+                                if (p.team === "wolf") wCount++;
+                            }
+                        });
+
+                        if (wCount === 0) {
+                            roomRef.update({ status: "ended", winner: "village" });
+                        } else if (vCount === 0) {
+                            roomRef.update({ status: "ended", winner: "wolf" });
+                        } else {
+                            roomRef.update({ 
+                                phase: "night", currentNightIndex: 0, dayNumber: (d.dayNumber || 1) + 1, 
+                                votes: null, dayVoteResult: null, "nightActions/quynhAnhTarget": null 
+                            });
+                        }
+                    });
+                }
+            }, 6000);
+        }
+        
+        function showVoteResult(titleHTML, subtitle) {
+            document.getElementById("voteResultPanel").classList.remove("hidden");
+            document.getElementById("voteResultTitle").innerHTML = `${titleHTML}<br><span style="font-size:1.1rem; opacity:0.8; display:block; margin-top:5px; font-weight:600; color: var(--dark);">${subtitle}</span>`;
+        }
+        
+        function renderChat(chatData) {
+            const chatBox = document.getElementById("discussionChat");
+            if (!chatBox) return;
+            const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 10;
+            
+            let html = `<div style="text-align:center; opacity:0.5; padding:5px; font-size:0.9rem; font-weight:600;">Tranh luận đeeee...</div>`;
+            if (chatData) {
+                Object.values(chatData).forEach(msg => {
+                    const isSelf = msg.name.includes(myName) ? "self" : "";
+                    const isGhost = msg.name.includes("[HỒN MA]") ? "ghost" : "";
+                    html += `<div class="chat-message ${isSelf} ${isGhost}"><strong>${msg.name}:</strong> ${msg.text}</div>`;
+                });
+            }
+            chatBox.innerHTML = html;
+            if (isScrolledToBottom) chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById("chatInput");
+            const msg = input.value.trim();
+            if (!msg || !roomRef) return;
+            
+            const me = currentGameData.players[myPlayerId];
+            const prefix = (!me || !me.alive) ? "[HỒN MA] " : "";
+            roomRef.child("chat").push({ name: prefix + myName, text: msg, time: Date.now() });
+            input.value = "";
+            playSound('click');
+        }
+        
+        function showEndGameScreen(data) {
+            showScreen("endGameScreen");
+            
+            if (data.winner === "wolf") {
+                document.getElementById("endTitle").innerHTML = `🐺 SÓI THẮNG RỒI!`;
+                document.getElementById("endSubtitle").innerHTML = `Lớp học đã bị xơi tái không còn 1 mống!`;
+                document.getElementById("endGameScreen").style.background = "var(--danger)";
+            } else {
+                document.getElementById("endTitle").innerHTML = `🏆 LỚP HỌC THẮNG!`;
+                document.getElementById("endSubtitle").innerHTML = `Sói đã bị tiêu diệt hoàn toàn!`;
+                document.getElementById("endGameScreen").style.background = "var(--green-main)";
+            }
+            
+            let revealHTML = "<h3 style='margin-bottom: 10px; color: var(--dark);'>BẢNG VÀNG THÀNH TÍCH:</h3>";
+            Object.values(data.players || {}).forEach(p => {
+                if (p.team !== "ghost") {
+                    const aliveStr = p.alive ? '<span style="color:var(--green-main);">[Sống]</span>' : '<span style="color:var(--danger-dark);">[Chết]</span>';
+                    revealHTML += `<div style="margin:8px 0; border-bottom: 2px dotted #CBD5E1; padding-bottom:5px;">${aliveStr} ${p.name} → <strong>${p.role ? p.role.role : 'Không rõ'}</strong></div>`;
+                }
+            });
+            document.getElementById("endRoleReveal").innerHTML = revealHTML;
+            playSound('success');
+        }
+        
+        window.addEventListener("load", () => { initAudio(); });
+        window.addEventListener("beforeunload", () => {
+            if (roomRef && myPlayerId && !isHost) {
+                roomRef.child("players/" + myPlayerId).remove();
+            }
+        });
+    </script>
+</body>
+</html>
