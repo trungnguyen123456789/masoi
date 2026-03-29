@@ -44,15 +44,24 @@
             border-radius: 50px; border: 2px solid var(--dark); box-shadow: 0px 3px 0px var(--dark);
         }
 
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; }
+        .container { max-width: 900px; width: 100%; margin: 0 auto; padding: 20px; position: relative; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+
+        .center-screen {
+            min-height: 85vh;
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
 
         .comic-panel {
             background: var(--white); border: 3px solid var(--dark); border-radius: 24px;
             padding: 40px 30px; box-shadow: var(--shadow-solid); margin: 0 auto; position: relative;
+            width: 100%;
         }
 
-        #menu-screen { min-height: 85vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .menu-panel { max-width: 400px; width: 100%; border-radius: 20px; }
+        .menu-panel { max-width: 400px; border-radius: 20px; }
 
         @keyframes popIn {
             0% { transform: scale(0.8); opacity: 0; }
@@ -88,7 +97,6 @@
             box-shadow: 0px 5px 0px #94A3B8 !important; border-color: #94A3B8; transform: none !important;
         }
 
-        /* Ghi đè UI riêng cho màn hình Menu */
         #playerName {
             border-radius: 50px; border: 2px solid var(--dark); font-size: 16px; 
             box-shadow: none; padding: 14px 20px; font-weight: 600; max-width: 100%;
@@ -175,7 +183,6 @@
         ::-webkit-scrollbar-track { background: #F1F5F9; border-left: 2px solid var(--dark); }
         ::-webkit-scrollbar-thumb { background: var(--dark); border-radius: 10px; }
 
-        /* TỐI ƯU MOBILE */
         @media (max-width: 600px) {
             .container { padding: 10px; }
             h1 { font-size: 2.5rem; -webkit-text-stroke: 2px var(--dark); text-shadow: 0px 4px 0px var(--dark); margin-top: 15px; }
@@ -190,8 +197,7 @@
             .deal-card.selected-center { transform: translate(-50%, -50%) scale(2.2); }
             input, select { padding: 12px 16px; font-size: 16px; border-width: 2px; width: 100%; max-width: none; }
             
-            /* Chỉ full width ngoài menu */
-            #game-screen button, #room-screen button { width: 100%; margin: 6px 0; padding: 12px; font-size: 16px; border-width: 2px; display: block; box-sizing: border-box; }
+            #game-screen button, #room-screen button, #room-list-screen button { width: 100%; margin: 6px 0; padding: 12px; font-size: 16px; border-width: 2px; display: block; box-sizing: border-box; }
             
             .player-item { width: 100%; flex-direction: row; padding: 12px; justify-content: space-between; font-size: 1rem; margin-bottom: 5px; }
             .timer { font-size: 2.2rem; padding: 5px 15px; }
@@ -215,17 +221,18 @@
         }
         .player-grid button {
             margin: 0; padding: 12px 15px; font-size: 16px; flex: 1 1 auto; min-width: 80px; max-width: 150px;
+            border-radius: 12px;
         }
         @media (max-width: 600px) {
-             .player-grid button { width: auto !important; } /* Ghi đè luật full width cho button chọn người */
+             .player-grid button { width: auto !important; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         
-        <div id="menu-screen">
-            <div style="position: relative; margin-bottom: 25px;">
+        <div id="menu-screen" class="center-screen">
+            <div style="position: relative; margin-bottom: 25px; text-align: center;">
                 <h1>VUA SẦU RIÊNG</h1>
                 <div class="subtitle">Di Sản Vua Sầu Riêng🎒</div>
                 <span class="floating-durian" style="top:-10px; left:-20px; transform: rotate(-15deg);">🍈</span>
@@ -243,25 +250,32 @@
                         Xin chào, <span id="greetingName" style="color:var(--durian-dark); font-weight:700; font-size:1.5rem; text-decoration: underline;"></span>!
                     </p>
                     <button id="btnCreateRoom" onclick="createRoom()" style="width: 100%; margin: 8px 0;">🚀 TẠO PHÒNG MỚI</button>
+                    <button id="btnRoomList" onclick="showRoomList()" style="background: #FEF08A; color: var(--dark); width: 100%; margin: 8px 0;">🏢 CHỌN PHÒNG</button>
                     <button id="btnJoinRoomInput" onclick="showJoinScreen()" style="background: var(--white); color: var(--dark); width: 100%; margin: 8px 0;">🔑 NHẬP MÃ PHÒNG</button>
                     <button id="btnAutoJoin" onclick="autoJoinFromLink()" class="hidden" style="background: var(--green-main); width: 100%; margin: 8px 0;">🚀 VÀO PHÒNG NGAY</button>
                 </div>
             </div>
         </div>
 
-        <div id="join-screen" class="hidden comic-panel menu-panel" style="margin-top: 10vh;">
+        <div id="room-list-screen" class="hidden comic-panel menu-panel center-screen">
+            <h2 style="margin-bottom:15px; font-size: 1.8rem;">🏢 Chọn phòng</h2>
+            <div id="availableRooms" style="width:100%; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; margin-bottom: 20px; padding: 5px;"></div>
+            <button onclick="backToMenu()" style="background:#CBD5E1; width: 100%; margin: 8px 0;">← Quay lại</button>
+        </div>
+
+        <div id="join-screen" class="hidden comic-panel menu-panel center-screen">
             <h2 style="margin-bottom:15px; font-size: 1.8rem;">🔑 Nhập mã phòng</h2>
             <input type="number" id="roomCodeInput" placeholder="VD: 123456" maxlength="6" style="font-size:2rem; letter-spacing:5px; font-weight:700;">
             <button onclick="joinRoom()" style="width: 100%; margin: 8px 0;">VÀO PHÒNG THÔI</button>
             <button onclick="backToMenu()" style="background:#CBD5E1; width: 100%; margin: 8px 0;">← Quay lại</button>
         </div>
 
-        <div id="room-screen" class="hidden comic-panel" style="padding: 30px 20px; text-align: center;">
+        <div id="room-screen" class="hidden comic-panel center-screen" style="max-width: 600px; padding: 40px 20px;">
             <h2 style="font-size: 2.5rem; background: var(--durian); padding: 15px 30px; border-radius: 20px; border: 4px solid var(--dark); display: inline-block; margin-bottom: 20px; box-shadow: var(--shadow-solid-sm);">
                 MÃ PHÒNG: <span id="roomCodeDisplay" style="color:var(--danger-dark); font-weight:900; letter-spacing: 2px;"></span>
             </h2>
             
-            <div style="background: #F1F5F9; border: 3px dashed var(--dark); border-radius: 16px; padding: 12px; margin: 0 auto 25px; max-width: 400px; display: flex; gap: 10px; align-items: center;">
+            <div style="background: #F1F5F9; border: 3px dashed var(--dark); border-radius: 16px; padding: 12px; margin: 0 auto 25px; width: 100%; max-width: 400px; display: flex; gap: 10px; align-items: center;">
                 <span style="font-size:1.5rem; margin-left:5px;">🔗</span>
                 <input type="text" id="shareLinkInput" readonly style="flex-grow:1; margin:0; padding:10px; font-size:14px; border:2px solid var(--dark); border-radius:10px; background:var(--white); outline:none; font-weight: 500;">
                 <button onclick="copyRoomLink()" id="btnCopyLink" style="margin:0; padding: 10px 15px; font-size: 14px; background: var(--green-main); border-radius:10px; box-shadow: 0px 3px 0px var(--dark);">COPY</button>
@@ -269,23 +283,23 @@
 
             <p id="roomStatusText" class="status" style="background:var(--white); display:inline-block; padding:8px 20px; border-radius:20px; border:2px solid var(--dark); margin-bottom:20px; font-size: 1.1rem; box-shadow: inset 0px 3px 0px rgba(0,0,0,0.05);">Đang chờ 500 anh em...</p>
             
-            <div class="player-list" id="waitingPlayerList" style="justify-content: center; gap: 15px; background: #E2E8F0; padding: 20px; border-radius: 20px; border: 3px solid var(--dark); min-height: 150px;"></div>
+            <div class="player-list" id="waitingPlayerList" style="justify-content: center; gap: 15px; background: #E2E8F0; padding: 20px; border-radius: 20px; border: 3px solid var(--dark); min-height: 150px; width: 100%;"></div>
             
-            <div style="margin-top: 30px; display:flex; flex-direction:column; gap:12px; align-items:center;">
+            <div style="margin-top: 30px; display:flex; flex-direction:column; gap:12px; align-items:center; width: 100%;">
                 <button onclick="toggleReadyStatus()" id="readyButton" style="width:100%; max-width:400px; font-size:1.4rem; padding:18px; border-radius: 20px; margin: 0;">👌 TÔI SẴN SÀNG</button>
                 <button onclick="forceStartAsHost()" id="hostStartButton" class="hidden" style="width:100%; max-width:400px; background:#93C5FD; font-size:1.4rem; padding:18px; border-radius: 20px; margin: 0;">🎴 CHIA BÀI NÀO (HOST)</button>
                 <button onclick="leaveCurrentRoom()" style="background:transparent; color:#64748b; border:none; box-shadow:none; font-size:1rem; text-decoration: underline; margin-top:5px; padding: 5px;">Rời khỏi phòng</button>
             </div>
         </div>
 
-        <div id="dealing-screen" class="hidden">
+        <div id="dealing-screen" class="hidden center-screen">
             <h2 style="margin-top: 20px; font-size: 2rem; text-shadow: 2px 2px 0 var(--white);">ĐANG XÀO BÀI...</h2>
             <p id="dealingStatusText" class="status" style="background: var(--white); display: inline-block; padding: 5px 15px; border-radius: 20px; border: 2px solid var(--dark);">Chọn 1 lá bài may mắn</p>
             <div class="deck-container" id="fullDeckContainer">
                 </div>
         </div>
 
-        <div id="game-screen" class="hidden">
+        <div id="game-screen" class="hidden" style="padding-top: 20px; min-height: 85vh;">
             <div id="phaseHeaderContainer" class="phase-header"></div>
             
             <div id="nightPhase" class="hidden comic-panel" style="padding: 30px 15px; background: #334155; color: var(--white);">
@@ -322,12 +336,12 @@
             </div>
         </div>
 
-        <div id="endGameScreen" class="hidden comic-panel" style="margin-top: 5vh; background: var(--durian);">
+        <div id="endGameScreen" class="hidden comic-panel center-screen" style="background: var(--durian); padding: 40px 20px;">
             <h1 id="endTitle" style="font-size:3rem; text-shadow: none; color: var(--dark);"></h1>
             <p id="endSubtitle" style="font-size:1.4rem; margin:15px 0 25px; font-weight: 600;"></p>
-            <div id="endRoleReveal" style="text-align: left; background: var(--white); padding: 20px; border-radius: 16px; max-height: 300px; overflow-y: auto; margin-bottom: 25px; border: 3px solid var(--dark); font-size: 1.1rem; font-weight: 500; box-shadow: inset 0px 4px 8px rgba(0,0,0,0.05);"></div>
-            <button onclick="returnToWaitingRoom()" style="background: var(--green-main); width: 100%; margin: 8px 0;">VỀ PHÒNG CHỜ</button>
-            <button onclick="leaveCurrentRoom()" style="background: var(--white); width: 100%; margin: 8px 0;">THOÁT PHÒNG</button>
+            <div id="endRoleReveal" style="text-align: left; background: var(--white); padding: 20px; border-radius: 16px; max-height: 300px; overflow-y: auto; margin-bottom: 25px; border: 3px solid var(--dark); font-size: 1.1rem; font-weight: 500; box-shadow: inset 0px 4px 8px rgba(0,0,0,0.05); width: 100%;"></div>
+            <button onclick="returnToWaitingRoom()" style="background: var(--green-main); width: 100%; max-width: 400px; margin: 8px 0;">VỀ PHÒNG CHỜ</button>
+            <button onclick="leaveCurrentRoom()" style="background: var(--white); width: 100%; max-width: 400px; margin: 8px 0;">THOÁT PHÒNG</button>
         </div>
 
         <div id="vetoOverlay" class="hidden">
@@ -403,9 +417,14 @@
             { id: 52, cardName: "Thằng giấu xe", role: "Thằng giấu xe", desc: "Chọn 1 người đêm đầu. Sống -> thắng cùng. Chết -> phải bị loại mới thắng.", team: "third" }
         ];
 
-        for (let i = 1; i <= 15; i++) {
+        // Tỉ lệ ~65% Cư dân sầu riêng (10 lá) và ~35% Đậu vô gia cư (5 lá)
+        for (let i = 1; i <= 10; i++) {
             CLASS_CARDS.push({ id: 100 + i, cardName: "Cư dân sầu riêng", role: "Cư dân sầu riêng", desc: "Dùng lý lẽ ban ngày để tìm ra kẻ ăn vụng bảo vệ vườn sầu riêng.", team: "village" });
         }
+        for (let i = 1; i <= 5; i++) {
+            CLASS_CARDS.push({ id: 115 + i, cardName: "Đậu vô gia cư", role: "Đậu vô gia cư", desc: "Không có nhà. Giống Cư dân sầu riêng nhưng không thể nghe điện thoại.", team: "village" });
+        }
+
         for (let i = 1; i <= 8; i++) {
             CLASS_CARDS.push({ id: 200 + i, cardName: "Đậu Bảo", role: "Đậu Bảo", desc: "Hội ăn vụng. Mỗi đêm cắn 1 mục tiêu.", team: "wolf" });
         }
@@ -424,6 +443,7 @@
             if (joinRoomId && joinRoomId.length === 6) {
                 window.autoJoinRoomCode = joinRoomId;
                 document.getElementById("btnCreateRoom").classList.add("hidden");
+                document.getElementById("btnRoomList").classList.add("hidden");
                 document.getElementById("btnJoinRoomInput").classList.add("hidden");
                 document.getElementById("btnAutoJoin").classList.remove("hidden");
             }
@@ -601,9 +621,17 @@
             }
             return newArray;
         }
+
+        function getShuffledPlayers() {
+            return shuffleArray(Object.keys(currentGameData.players || {}));
+        }
         
         function showScreen(id) {
-            document.querySelectorAll('.container > div').forEach(screen => screen.classList.add('hidden'));
+            document.querySelectorAll('.container > div').forEach(screen => {
+                if(screen.id !== 'vetoOverlay' && screen.id !== 'phoneOverlay') {
+                    screen.classList.add('hidden');
+                }
+            });
             const target = document.getElementById(id);
             if (target) {
                 target.classList.remove('hidden');
@@ -645,15 +673,70 @@
             playSound('click');
             showScreen("join-screen"); 
         }
+
+        function showRoomList() {
+            playSound('click');
+            showScreen("room-list-screen");
+            const container = document.getElementById("availableRooms");
+            container.innerHTML = "<p>Đang quét các phòng...</p>";
+            
+            db.ref("vua_sau_rieng_rooms").once("value", snap => {
+                const rooms = snap.val();
+                container.innerHTML = "";
+                let hasRooms = false;
+                const now = Date.now();
+                
+                if (rooms) {
+                    Object.entries(rooms).forEach(([code, roomData]) => {
+                        const pCount = roomData.players ? Object.keys(roomData.players).length : 0;
+                        
+                        // CƠ CHẾ DỌN PHÒNG RÁC: 0 người, hoặc 1 người kẹt lại hơn 5 phút
+                        if (pCount === 0 || (pCount === 1 && (now - (roomData.created || now)) > 300000)) {
+                            db.ref("vua_sau_rieng_rooms/" + code).remove();
+                            return; 
+                        }
+
+                        if (roomData.status === "waiting") {
+                            hasRooms = true;
+                            const btn = document.createElement("button");
+                            btn.style.width = "100%";
+                            btn.style.margin = "0";
+                            btn.style.padding = "12px 15px";
+                            btn.style.fontSize = "16px";
+                            btn.style.background = "var(--white)";
+                            btn.style.textAlign = "left";
+                            btn.style.display = "flex";
+                            btn.style.justifyContent = "space-between";
+                            btn.style.alignItems = "center";
+                            btn.style.borderRadius = "50px";
+                            btn.style.boxShadow = "0px 3px 0px var(--dark)";
+                            btn.innerHTML = `<span style="font-weight:700;"><span style="color:var(--danger-dark);">[${code}]</span> HOST: ${roomData.hostName.toUpperCase()}</span> <span style="background:var(--durian); padding:4px 12px; border-radius:50px; border:2px solid var(--dark); font-weight:800;">👤 ${pCount}</span>`;
+                            btn.onclick = () => {
+                                document.getElementById("roomCodeInput").value = code;
+                                joinRoom();
+                            };
+                            container.appendChild(btn);
+                        }
+                    });
+                }
+                
+                if (!hasRooms) {
+                    container.innerHTML = "<p style='color:var(--danger-dark); font-weight:bold;'>Chưa có phòng nào đang mở. Hãy tự tạo phòng đi!</p>";
+                }
+            });
+        }
         
         function joinRoomAsPlayer(isLateJoin = false) {
+            const pRef = roomRef.child("players/" + myPlayerId);
+            pRef.onDisconnect().remove();
+
             if (isLateJoin) {
-                roomRef.child("players/" + myPlayerId).set({ 
+                pRef.set({ 
                     name: myName, ready: true, alive: false, 
                     role: { id: 999, cardName: "Hồn Ma Đi Lạc", role: "Khán Giả", desc: "Bạn vào trễ nên hóa ma luôn! Nằm xem kịch hay nhé.", team: "ghost" } 
                 });
             } else {
-                roomRef.child("players/" + myPlayerId).set({ name: myName, ready: false, alive: true, role: null });
+                pRef.set({ name: myName, ready: false, alive: true, role: null });
             }
         }
         
@@ -703,6 +786,13 @@
             });
         }
 
+        function kickPlayer(targetId) {
+            playSound('click');
+            if (confirm("Đuổi người chơi này ra khỏi phòng?")) {
+                if (roomRef) roomRef.child("players/" + targetId).remove();
+            }
+        }
+
         function leaveCurrentRoom() {
             playSound('click');
             if (roomRef && myPlayerId) {
@@ -714,6 +804,12 @@
                     }
                 } else {
                     roomRef.child("players/" + myPlayerId).remove().then(() => {
+                        roomRef.once('value', snap => {
+                            let d = snap.val();
+                            if (d && (!d.players || Object.keys(d.players).length === 0)) {
+                                roomRef.remove();
+                            }
+                        });
                         location.reload();
                     });
                 }
@@ -745,7 +841,7 @@
                         dayVoteResult: null, quynhAnhUsed: null, winner: null, 
                         lastDayVotes: null, lastNightKills: null,
                         witchSaveUsed: null, witchPoisonUsed: null, thanhNhanUsed: null, principalDead: null, lovers: null, actorCards: null, wolfTiebreakTimer: null, lxbUsed: null,
-                        vetoPhase: null, coLoanUsed: null, phoneCall: null
+                        vetoPhase: null, coLoanUsed: null, phoneCall: null, nightOrder: null
                     };
                     
                     if (currentGameData && currentGameData.players) {
@@ -769,14 +865,28 @@
             }
         }
         
+        let roomEmptyTimer = null;
+
         function startListeningToRoom() {
             if (!roomRef) return;
             roomRef.on("value", snapshot => {
                 const data = snapshot.val();
-                if (!data) {
-                    alert("Phòng đã bị Host giải tán!");
+                
+                if (!data || (data.players && Object.keys(data.players).length === 0)) {
+                    if (data && Object.keys(data.players).length === 0) roomRef.remove();
+                    alert("Phòng đã bị giải tán!");
                     location.reload();
                     return;
+                }
+
+                if (myPlayerId && currentPhase === "waiting" && data.status === "waiting") {
+                    if (!data.players || !data.players[myPlayerId]) {
+                        if (!document.getElementById("room-screen").classList.contains("hidden")) {
+                            alert("Bạn đã bị chủ phòng mời ra khỏi phòng!");
+                            location.reload();
+                            return;
+                        }
+                    }
                 }
                 
                 currentGameData = data;
@@ -787,6 +897,25 @@
                 alivePlayersCount = Object.values(data.players || {}).filter(p => p.alive === true && p.team !== "ghost").length;
                 
                 if (data.status === "waiting") {
+                    // ĐỒNG HỒ TỰ HỦY: Chạy ngầm 5 phút nếu chỉ có 1 mình
+                    const pCount = Object.keys(data.players || {}).length;
+                    if (pCount <= 1) {
+                        if (!roomEmptyTimer) {
+                            roomEmptyTimer = setTimeout(() => {
+                                if (roomRef) {
+                                    roomRef.remove();
+                                    alert("Phòng đã tự động giải tán do không có người tham gia trong 5 phút.");
+                                    location.reload();
+                                }
+                            }, 300000); // 5 phút
+                        }
+                    } else {
+                        if (roomEmptyTimer) {
+                            clearTimeout(roomEmptyTimer);
+                            roomEmptyTimer = null;
+                        }
+                    }
+
                     if (document.getElementById("room-screen").classList.contains("hidden")) {
                         showScreen("room-screen");
                         if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
@@ -805,6 +934,8 @@
                         }
                     }
                 } else if (data.status === "dealing") {
+                    if (roomEmptyTimer) { clearTimeout(roomEmptyTimer); roomEmptyTimer = null; }
+
                     if (document.getElementById("dealing-screen").classList.contains("hidden")) {
                         showScreen("dealing-screen");
                         initializeDealingScreen(data);
@@ -825,7 +956,7 @@
                         if (isHost) {
                             dealAutoStartTimer = setTimeout(() => {
                                 if (currentGameData.status === "dealing") {
-                                    roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0 });
+                                    roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0, nightOrder: getShuffledPlayers() });
                                 }
                             }, 30000); 
                         }
@@ -852,13 +983,14 @@
                                 if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
                                 dealAllReadyTimer = setTimeout(() => {
                                     if (currentGameData.status === "dealing") {
-                                        roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0 });
+                                        roomRef.update({ status: "playing", phase: "night", currentNightIndex: 0, nightOrder: getShuffledPlayers() });
                                     }
                                 }, 5000);
                             }
                         }
                     }
                 } else if (data.status === "playing") {
+                    if (roomEmptyTimer) { clearTimeout(roomEmptyTimer); roomEmptyTimer = null; }
                     if (dealAutoStartTimer) clearTimeout(dealAutoStartTimer);
                     if (dealAllReadyTimer) clearTimeout(dealAllReadyTimer);
                     if (dealCountdownInterval) clearInterval(dealCountdownInterval);
@@ -874,6 +1006,7 @@
                     renderChat(data.chat);
 
                 } else if (data.status === "ended") {
+                    if (roomEmptyTimer) { clearTimeout(roomEmptyTimer); roomEmptyTimer = null; }
                     showEndGameScreen(data);
                 }
             });
@@ -943,10 +1076,11 @@
                         setTimeout(() => {
                             if(roomRef) roomRef.update({ 
                                 phase: "night", currentNightIndex: 0, dayNumber: (data.dayNumber || 1) + 1, 
-                                votes: null, dayVoteResult: null, "nightActions/quynhAnhTarget": null, vetoPhase: null 
+                                votes: null, dayVoteResult: null, "nightActions/quynhAnhTarget": null, vetoPhase: null,
+                                nightOrder: getShuffledPlayers()
                             });
                         }, 6000);
-                    } else if (data.vetoPhase.decision === "NO") {
+                    } else if (data.vetoPhase.decision === "NO" || Date.now() > data.vetoPhase.expires) {
                         window.vetoProcessed = true;
                         roomRef.child("vetoPhase/active").set(false);
                         let isTieBack = false;
@@ -983,7 +1117,12 @@
             Object.entries(data.players || {}).forEach(([id, player]) => {
                 const div = document.createElement("div");
                 div.className = `player-item ${player.alive ? '' : 'dead'}`;
-                div.innerHTML = `<span>${player.name}</span> ${player.ready ? `<span style="color:var(--green-main); font-size:1.4rem;">✔</span>` : `<span style="color:var(--durian-dark); font-size:1.4rem;">⏳</span>`}`;
+                div.style.position = "relative";
+                let kickHtml = "";
+                if (isHost && id !== myPlayerId) {
+                    kickHtml = `<button onclick="kickPlayer('${id}')" style="position: absolute; top: -12px; right: -12px; background: var(--danger); color: white; border: 2px solid var(--dark); border-radius: 50%; width: 28px; height: 28px; padding: 0; font-size: 14px; line-height: 1; margin: 0; min-width: auto; box-shadow: 0px 2px 0px var(--dark);">✖</button>`;
+                }
+                div.innerHTML = `<span>${player.name}</span> ${player.ready ? `<span style="color:var(--green-main); font-size:1.4rem;">✔</span>` : `<span style="color:var(--durian-dark); font-size:1.4rem;">⏳</span>`} ${kickHtml}`;
                 container.appendChild(div);
             });
             document.getElementById("roomStatusText").innerHTML = `Đã có <strong>${Object.keys(data.players || {}).length}</strong> người trong phòng`;
@@ -1187,7 +1326,8 @@
         function handleNightSequence(data) {
             const callerDiv = document.getElementById("nightCaller");
             const actionPanel = document.getElementById("nightActionPanel");
-            const playerList = Object.keys(data.players || {});
+            
+            const playerList = data.nightOrder || Object.keys(data.players || {});
             let currentIndex = data.currentNightIndex || 0;
             
             if (isHost && currentIndex < playerList.length) {
@@ -1873,9 +2013,9 @@
                     <div class="player-grid" id="dayVoteList"></div>
                     <button id="skipVoteBtn" onclick="selectVote('SKIP')" style="background:#E2E8F0; padding: 10px 20px; width: 100%;">⏭️ BỎ QUA VÒNG NÀY</button>
                     
-                    <div id="confirmVoteSection" class="hidden" style="margin-top: 15px; padding: 20px; border-radius: 16px; background: #FEF9C3; border: 3px solid var(--dark); box-shadow: var(--shadow-solid-sm);">
-                        <p style="font-weight: 600; font-size: 1.1rem;">Chốt sổ đứa này: <strong id="selectedVoteName" style="color:var(--danger-dark); font-size:1.5rem; text-decoration: underline;"></strong>?</p>
-                        <button onclick="confirmVote()" style="background:var(--green-main); color:var(--dark); width:100%; margin-top:10px;">✅ CHỐT</button>
+                    <div id="confirmVoteSection" class="hidden" style="margin-top: 15px; padding: 20px; border-radius: 20px; background: #FEF9C3; border: 3px solid var(--dark); box-shadow: var(--shadow-solid-sm);">
+                        <p style="font-size: 1.2rem; font-weight: 600;">Bạn quyết định chọn: <strong id="selectedVoteName" style="font-size:1.5rem; text-decoration: underline;"></strong>?</p>
+                        <button onclick="confirmVote()" style="background:var(--green-main); color:var(--dark); margin-top: 15px; width: 100%;">✅ CHỐT ĐƠN</button>
                     </div>
                 `;
                 renderDayVoteButtons(data);
@@ -2042,7 +2182,8 @@
 
                             roomRef.update({ 
                                 phase: "night", currentNightIndex: 0, dayNumber: (d.dayNumber || 1) + 1, 
-                                votes: null, dayVoteResult: null, "nightActions/quynhAnhTarget": null, vetoPhase: null 
+                                votes: null, dayVoteResult: null, "nightActions/quynhAnhTarget": null, vetoPhase: null,
+                                nightOrder: getShuffledPlayers()
                             });
                         }
                     });
@@ -2061,7 +2202,7 @@
             if (lockedPlayer) lockedPlayerId = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === lockedPlayer);
             
             Object.entries(votes).forEach(([voterId, targetName]) => {
-                if (voterId === lockedPlayerId) return; // Chỉ chặn không cho ng bị khóa bỏ phiếu, phiếu SKIP của người khác vẫn được tính
+                if (voterId === lockedPlayerId) return; 
                 const voter = currentGameData.players[voterId];
                 if(voter && voter.revealedIdiot) return; 
                 
@@ -2094,7 +2235,10 @@
             const requiredVotes = Math.ceil(alivePlayersCount * 0.5); 
 
             let coLoanPlayer = Object.entries(currentGameData.players).find(([k, p]) => p.role && p.role.cardName === "Cô Loan" && p.alive);
-            if (coLoanPlayer && !currentGameData.coLoanUsed && eliminated && eliminated !== "SKIP" && maxVotes >= requiredVotes && !isTie) {
+            
+            let shouldSkipCoLoan = (isTie && tiedNames.includes("SKIP") && tiedNames.length === 2) || eliminated === "SKIP";
+
+            if (coLoanPlayer && !currentGameData.coLoanUsed && eliminated && !shouldSkipCoLoan && maxVotes >= requiredVotes && !isTie) {
                 window.vetoProcessed = false; 
                 roomRef.update({
                     vetoPhase: {
