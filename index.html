@@ -9,8 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         :root {
-            --durian: #FDE047; --durian-dark: #EAB308; --green-light: #BBF7D0; --green-main: #4ADE80;
-            --danger: #FDA4AF; --danger-dark: #E11D48; --dark: #1E293B; --bg-body: #F0FDF4; --white: #FFFFFF;
+            --durian: #FDE047; --durian-dark: #EAB308; --green-light: #D1FAE5; --green-main: #4ADE80;
+            --danger: #FDA4AF; --danger-dark: #E11D48; --dark: #1E293B; --bg-body: #ECFDF5; --white: #FFFFFF;
             --shadow-solid: 4px 4px 0px var(--dark); --shadow-solid-sm: 2px 2px 0px var(--dark);
         }
         
@@ -19,7 +19,7 @@
         body {
             background-color: var(--bg-body);
             background-image: radial-gradient(var(--green-light) 2px, transparent 2px);
-            background-size: 30px 30px;
+            background-size: 25px 25px;
             color: var(--dark);
             text-align: center;
             min-height: 100vh;
@@ -29,23 +29,19 @@
 
         h1 {
             font-size: 3.5rem;
-            font-weight: 700;
-            margin: 20px 0 5px;
+            font-weight: 800;
+            margin: 20px 0 10px;
             color: var(--white);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 
-                -2px -2px 0 var(--dark),  
-                 2px -2px 0 var(--dark),
-                -2px  2px 0 var(--dark),
-                 2px  2px 0 var(--dark),
-                 4px  4px 0 var(--dark);
+            letter-spacing: 1px;
+            -webkit-text-stroke: 2.5px var(--dark);
+            text-shadow: 0px 5px 0 var(--dark);
         }
         
         .subtitle { 
-            font-size: 1.3rem; color: var(--dark); margin-bottom: 30px; font-weight: 600;
-            background: var(--durian); display: inline-block; padding: 5px 15px;
-            border-radius: 20px; border: 2px solid var(--dark); box-shadow: var(--shadow-solid-sm);
+            font-size: 1.1rem; color: var(--dark); margin-bottom: 25px; font-weight: 700;
+            background: var(--durian); display: inline-block; padding: 6px 20px;
+            border-radius: 50px; border: 2px solid var(--dark); box-shadow: 0px 3px 0px var(--dark);
         }
 
         .container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; }
@@ -55,8 +51,8 @@
             padding: 40px 30px; box-shadow: var(--shadow-solid); margin: 0 auto; position: relative;
         }
 
-        #menu-screen { min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .menu-panel { max-width: 450px; width: 100%; }
+        #menu-screen { min-height: 85vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .menu-panel { max-width: 400px; width: 100%; border-radius: 20px; }
 
         @keyframes popIn {
             0% { transform: scale(0.8); opacity: 0; }
@@ -67,7 +63,7 @@
 
         @keyframes bounce {
             from { transform: translateY(0) rotate(-10deg); }
-            to { transform: translateY(-15px) rotate(10deg); }
+            to { transform: translateY(-10px) rotate(10deg); }
         }
 
         button {
@@ -90,6 +86,16 @@
         button:disabled { 
             background: #E2E8F0 !important; color: #94A3B8 !important; cursor: not-allowed; 
             box-shadow: 0px 5px 0px #94A3B8 !important; border-color: #94A3B8; transform: none !important;
+        }
+
+        /* Ghi đè UI riêng cho màn hình Menu */
+        #playerName {
+            border-radius: 50px; border: 2px solid var(--dark); font-size: 16px; 
+            box-shadow: none; padding: 14px 20px; font-weight: 600; max-width: 100%;
+        }
+        .menu-panel button {
+            border-radius: 50px; border: 2px solid var(--dark); padding: 12px 30px; 
+            box-shadow: 0px 4px 0px var(--dark); font-size: 16px; width: auto; display: inline-block;
         }
 
         input, select {
@@ -172,21 +178,28 @@
         /* TỐI ƯU MOBILE */
         @media (max-width: 600px) {
             .container { padding: 10px; }
-            h1 { font-size: 2rem; margin-top: 10px; }
-            .subtitle { font-size: 1.1rem; padding: 4px 12px; margin-bottom: 20px; }
-            .comic-panel { padding: 20px 15px; border-radius: 16px; border-width: 2px; }
+            h1 { font-size: 2.5rem; -webkit-text-stroke: 2px var(--dark); text-shadow: 0px 4px 0px var(--dark); margin-top: 15px; }
+            .subtitle { font-size: 1rem; padding: 5px 15px; margin-bottom: 25px; border-width: 2px; }
+            .comic-panel { padding: 30px 20px; border-radius: 20px; border-width: 2px; }
+            
+            #menu-screen .comic-panel { max-width: 90%; }
+            #menu-screen button { width: auto; min-width: 140px; }
+            
             .deal-card { width: 90px; height: 135px; }
             .deal-card.spread { margin: -15px 2px; }
             .deal-card.selected-center { transform: translate(-50%, -50%) scale(2.2); }
             input, select { padding: 12px 16px; font-size: 16px; border-width: 2px; width: 100%; max-width: none; }
-            button { width: 100%; margin: 6px 0; padding: 12px; font-size: 16px; border-width: 2px; display: block; box-sizing: border-box; }
+            
+            /* Chỉ full width ngoài menu */
+            #game-screen button, #room-screen button { width: 100%; margin: 6px 0; padding: 12px; font-size: 16px; border-width: 2px; display: block; box-sizing: border-box; }
+            
             .player-item { width: 100%; flex-direction: row; padding: 12px; justify-content: space-between; font-size: 1rem; margin-bottom: 5px; }
             .timer { font-size: 2.2rem; padding: 5px 15px; }
             .phase-header { font-size: 1.4rem; padding: 10px 20px; width: 100%; }
             .deck-container { padding: 10px; min-height: 400px; }
             .chat-box { height: 180px; }
             #nightActionPanel, #dayPhase { padding: 15px; }
-            .floating-durian { font-size: 1.8rem; }
+            .floating-durian { font-size: 1.5rem; }
         }
         
         .show-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -203,6 +216,9 @@
         .player-grid button {
             margin: 0; padding: 12px 15px; font-size: 16px; flex: 1 1 auto; min-width: 80px; max-width: 150px;
         }
+        @media (max-width: 600px) {
+             .player-grid button { width: auto !important; } /* Ghi đè luật full width cho button chọn người */
+        }
     </style>
 </head>
 <body>
@@ -212,8 +228,8 @@
             <div style="position: relative; margin-bottom: 25px;">
                 <h1>VUA SẦU RIÊNG</h1>
                 <div class="subtitle">Di Sản Vua Sầu Riêng🎒</div>
-                <span class="floating-durian" style="top:-10px; left:-20px;">🍈</span>
-                <span class="floating-durian" style="bottom:20px; right:-20px; animation-delay:1s; font-size:2rem; transform: scaleX(-1);">🍈</span>
+                <span class="floating-durian" style="top:-10px; left:-20px; transform: rotate(-15deg);">🍈</span>
+                <span class="floating-durian" style="bottom:10px; right:-20px; animation-delay:1s; transform: scaleX(-1) rotate(-15deg);">🍈</span>
             </div>
             
             <div class="comic-panel menu-panel">
@@ -291,10 +307,10 @@
                 
                 <div id="voteSection" style="margin-top: 30px; padding-top: 20px; border-top: 3px dashed var(--dark);">
                     <p style="font-size:1.2rem; font-weight:700;">Chỉ tay điểm mặt người bị loại (1 lần duy nhất)</p>
-                    <div class="player-list" id="dayVoteList"></div>
-                    <button id="skipVoteBtn" onclick="selectVote('SKIP')" style="background:#E2E8F0; padding: 10px 20px; width: 100%;">⏭️ Bỏ qua vòng này</button>
+                    <div class="player-grid" id="dayVoteList"></div>
+                    <button id="skipVoteBtn" onclick="selectVote('SKIP')" style="background:#E2E8F0; padding: 10px 20px; width: 100%;">⏭️ BỎ QUA VÒNG NÀY</button>
                     
-                    <div id="confirmVoteSection" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 20px; background: var(--durian); border: 3px solid var(--dark); box-shadow: inset 0px 4px 0px rgba(255,255,255,0.5);">
+                    <div id="confirmVoteSection" class="hidden" style="margin-top: 20px; padding: 20px; border-radius: 20px; background: #FEF9C3; border: 3px solid var(--dark); box-shadow: inset 0px 4px 0px rgba(255,255,255,0.5);">
                         <p style="font-size: 1.2rem; font-weight: 600;">Bạn quyết định chọn: <strong id="selectedVoteName" style="font-size:1.5rem; text-decoration: underline;"></strong>?</p>
                         <button onclick="confirmVote()" style="background:var(--green-main); color:var(--dark); margin-top: 15px; width: 100%;">✅ CHỐT ĐƠN</button>
                     </div>
@@ -401,7 +417,6 @@
         let currentGameData = {};
         let pendingVoteTarget = null;
         
-        // Auto Join via Link Check
         window.autoJoinRoomCode = null;
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -934,7 +949,8 @@
                     } else if (data.vetoPhase.decision === "NO") {
                         window.vetoProcessed = true;
                         roomRef.child("vetoPhase/active").set(false);
-                        executeDayKill(data.vetoPhase.target, data.vetoPhase.maxVotes, data.vetoPhase.requiredVotes, false, data.vetoPhase.votes);
+                        let isTieBack = false;
+                        executeDayKill(data.vetoPhase.target, data.vetoPhase.maxVotes, data.vetoPhase.requiredVotes, isTieBack, data.vetoPhase.tiedNames || [data.vetoPhase.target], data.vetoPhase.votes);
                     }
                 }
             } else {
@@ -1568,7 +1584,7 @@
             } else if (roleData.cardName === "Alo em ăn cơm chưa") {
                 let pData = currentGameData.players[myPlayerId];
                 if (pData && pData.aloBanned) {
-                    html += `<p style="color:var(--danger-dark); font-size:1.2rem; font-weight:bold; background:#FFE4E6; padding:15px; border-radius:12px; border:2px solid var(--danger-dark);">❌ BẠN Đã BỊ TỔNG ĐÀI KHÓA MÁY VÌ QUẤY RỐI LIÊN TỤC 2 ĐÊM!</p>`;
+                    html += `<p style="color:var(--danger-dark); font-size:1.2rem; font-weight:bold; background:#FFE4E6; padding:15px; border-radius:12px; border:2px solid var(--danger-dark);">❌ BẠN ĐÃ BỊ TỔNG ĐÀI KHÓA MÁY VÌ QUẤY RỐI LIÊN TỤC 2 ĐÊM!</p>`;
                 } else {
                     if (pData && pData.lastAnsweredDay && (currentGameData.dayNumber - pData.lastAnsweredDay === 1)) {
                         html += `<p style="color:#B45309; background:#FEF3C7; padding:10px; border-radius:10px; font-weight:bold; font-size:1rem; border:2px solid #F59E0B; margin-bottom:15px;">⚠️ Hôm qua đã có người nghe máy! Nếu đêm nay nhá máy tiếp mà bị nhấc máy, bạn sẽ bị KHÓA SỐ vĩnh viễn. (Khuyên: Nên nghỉ 1 đêm cho an toàn!)</p>`;
@@ -1925,14 +1941,23 @@
             document.getElementById("vetoMessage").innerText = "Đã ghi nhận lựa chọn. Chờ một chút...";
         }
 
-        function executeDayKill(eliminated, maxVotes, requiredVotes, isTie, votesToSave) {
+        function executeDayKill(eliminated, maxVotes, requiredVotes, isTie, tiedNames, votesToSave) {
             let finalTitle = "";
             let finalSubtitle = "";
             let updates = {};
             
             if (isTie) {
-                finalTitle = "⚖️ HUỀ CẢ LÀNG";
-                finalSubtitle = `Số phiếu bằng nhau. Cả lớp đi ngủ...`;
+                if (tiedNames.includes("SKIP") && tiedNames.length === 2) {
+                    let tiedPerson = tiedNames.find(n => n !== "SKIP");
+                    finalTitle = "🕊️ ĐÃ BỎ QUA VOTE";
+                    finalSubtitle = `Số phiếu của ${tiedPerson} bằng với số phiếu Bỏ qua (50-50). Không ai bị tế!`;
+                } else {
+                    finalTitle = "⚖️ HUỀ CẢ LÀNG";
+                    finalSubtitle = `Số phiếu bằng nhau. Cả lớp đi ngủ...`;
+                }
+            } else if (eliminated === "SKIP") {
+                finalTitle = "🕊️ ĐÃ BỎ QUA VOTE";
+                finalSubtitle = `Đa số chọn bỏ qua vòng này. Cả lớp đi ngủ...`;
             } else if (eliminated && maxVotes >= requiredVotes) {
                 const playerKey = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === eliminated);
                 let p = currentGameData.players[playerKey];
@@ -2036,9 +2061,9 @@
             if (lockedPlayer) lockedPlayerId = Object.keys(currentGameData.players).find(k => currentGameData.players[k].name === lockedPlayer);
             
             Object.entries(votes).forEach(([voterId, targetName]) => {
-                if (targetName === "SKIP" || voterId === lockedPlayerId) return;
+                if (voterId === lockedPlayerId) return; // Chỉ chặn không cho ng bị khóa bỏ phiếu, phiếu SKIP của người khác vẫn được tính
                 const voter = currentGameData.players[voterId];
-                if(voter.revealedIdiot) return; 
+                if(voter && voter.revealedIdiot) return; 
                 
                 let weight = 1;
                 if (voter && voter.role) {
@@ -2056,16 +2081,21 @@
             });
             
             let maxVotes = 0, eliminated = null, isTie = false;
+            let tiedNames = [];
+
             Object.entries(voteCount).forEach(([name, count]) => {
-                if (count > maxVotes) { maxVotes = count; eliminated = name; isTie = false; } 
-                else if (count === maxVotes) { isTie = true; }
+                if (count > maxVotes) { 
+                    maxVotes = count; eliminated = name; isTie = false; tiedNames = [name]; 
+                } else if (count === maxVotes) { 
+                    isTie = true; tiedNames.push(name);
+                }
             });
             
             const requiredVotes = Math.ceil(alivePlayersCount * 0.5); 
 
             let coLoanPlayer = Object.entries(currentGameData.players).find(([k, p]) => p.role && p.role.cardName === "Cô Loan" && p.alive);
-            if (coLoanPlayer && !currentGameData.coLoanUsed && eliminated && maxVotes >= requiredVotes && !isTie) {
-                window.vetoProcessed = false; // Reset cờ xử lý chống dính vòng lặp
+            if (coLoanPlayer && !currentGameData.coLoanUsed && eliminated && eliminated !== "SKIP" && maxVotes >= requiredVotes && !isTie) {
+                window.vetoProcessed = false; 
                 roomRef.update({
                     vetoPhase: {
                         active: true,
@@ -2073,11 +2103,11 @@
                         expires: Date.now() + 5000,
                         votes: votes,
                         maxVotes: maxVotes,
-                        requiredVotes: requiredVotes
+                        requiredVotes: requiredVotes,
+                        tiedNames: tiedNames
                     }
                 });
 
-                // Ép tự động đóng và tử hình (NO) nếu Cô Loan treo máy không ấn
                 setTimeout(() => {
                     if (roomRef && isHost) {
                         roomRef.once('value', snap => {
@@ -2092,7 +2122,7 @@
                 return; 
             }
 
-            executeDayKill(eliminated, maxVotes, requiredVotes, isTie, votes);
+            executeDayKill(eliminated, maxVotes, requiredVotes, isTie, tiedNames, votes);
         }
         
         function showVoteResult(titleHTML, subtitle) {
